@@ -469,30 +469,36 @@ function renderGallery(container){
     const d=document.createElement('div');
     d.className='gallery-item';
     d.style.height=cellPx+'px';
-    const delBtn=`<button class="gal-del" onclick="event.stopPropagation();gallery.splice(${i},1);saveGallery();renderGallery(document.getElementById('galGrid'))" title="移除">✕</button>`;
+    const delBtn=`<button class="gal-del gal-del-${i}" title="移除">✕</button>`;
     const shortName = g.url.split('/').pop().split('?')[0].slice(0,20)||g.url.slice(0,20);
     if(g.type==='img'){
       d.innerHTML=`<img src="${g.url}" style="width:100%;height:100%;object-fit:cover;display:block;" onerror="this.parentElement.innerHTML='<div class=\\'gal-placeholder\\'><span style=\\'font-size:26px;\\'>🖼</span><span>${shortName}</span></div>'+\`${delBtn}\`">${delBtn}<div class="gal-label">${shortName}</div>`;
       d.onclick=()=>{insertAtCursor(`[ximg]${g.url}[/ximg]\n`);closeModal();};
+      d.querySelector('.gal-del').addEventListener('click',e=>{e.stopPropagation();gallery.splice(i,1);saveGallery();const g2=document.getElementById('galGrid');if(g2)renderGallery(g2);});
     } else if(g.type==='vid'){
       const vidIdx='gvc'+i+'_'+Date.now();
       d.innerHTML=`<canvas id="${vidIdx}" style="width:100%;height:100%;display:block;background:#111;"></canvas><div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:26px;pointer-events:none;text-shadow:0 1px 4px #000;">▶</div>${delBtn}<div class="gal-label">${shortName}</div>`;
       (function(url,cid){setTimeout(()=>{const cv=document.getElementById(cid);if(!cv)return;const v=document.createElement('video');v.src=url;v.muted=true;v.playsInline=true;v.crossOrigin='anonymous';v.addEventListener('loadeddata',()=>{v.currentTime=0.5;});v.addEventListener('seeked',()=>{const sz=120;cv.width=sz;cv.height=sz;cv.getContext('2d').drawImage(v,0,0,sz,sz);v.remove();});v.addEventListener('error',()=>{if(cv.parentElement)cv.parentElement.innerHTML=`<div class="gal-placeholder"><span>🎞</span><span>${shortName}</span></div>${delBtn}`;});v.load();},150);})(g.url,vidIdx);
       d.onclick=()=>{insertAtCursor(`[xmp4]${g.url}[/xmp4]\n`);closeModal();};
+      d.querySelector('.gal-del').addEventListener('click',e=>{e.stopPropagation();gallery.splice(i,1);saveGallery();const g2=document.getElementById('galGrid');if(g2)renderGallery(g2);});
     } else if(g.type==='sendvid'){
       d.innerHTML=`<div class="gal-placeholder" style="background:#0a1628;">📺<span>${g.url}</span></div>${delBtn}<div class="gal-label">Sendvid</div>`;
       d.onclick=()=>{insertAtCursor(`[xsendvid]${g.url}[/xsendvid]\n`);closeModal();};
+      d.querySelector('.gal-del').addEventListener('click',e=>{e.stopPropagation();gallery.splice(i,1);saveGallery();const g2=document.getElementById('galGrid');if(g2)renderGallery(g2);});
     } else if(g.type==='yt'){
       // Use YouTube thumbnail
       const ytId=g.url.replace(/\s/g,'');
       d.innerHTML=`<img src="https://img.youtube.com/vi/${ytId}/mqdefault.jpg" style="width:100%;height:100%;object-fit:cover;display:block;" onerror="this.parentElement.querySelector('.gal-placeholder')&&(this.style.display='none')">${delBtn}<div class="gal-label">YouTube</div>`;
       d.onclick=()=>{insertAtCursor(`[xyoutube]${g.url}[/xyoutube]\n`);closeModal();};
+      d.querySelector('.gal-del').addEventListener('click',e=>{e.stopPropagation();gallery.splice(i,1);saveGallery();const g2=document.getElementById('galGrid');if(g2)renderGallery(g2);});
     } else if(g.type==='tt'){
       d.innerHTML=`<div class="gal-placeholder" style="background:#111;">🎶<span>${g.url}</span></div>${delBtn}<div class="gal-label">TikTok</div>`;
       d.onclick=()=>{insertAtCursor(`[xtiktok]${g.url}[/xtiktok]\n`);closeModal();};
+      d.querySelector('.gal-del').addEventListener('click',e=>{e.stopPropagation();gallery.splice(i,1);saveGallery();const g2=document.getElementById('galGrid');if(g2)renderGallery(g2);});
     } else {
       d.innerHTML=`<div class="gal-placeholder">📎<span>${shortName}</span></div>${delBtn}`;
       d.onclick=()=>{insertAtCursor(`[ximg]${g.url}[/ximg]\n`);closeModal();};
+      d.querySelector('.gal-del').addEventListener('click',e=>{e.stopPropagation();gallery.splice(i,1);saveGallery();const g2=document.getElementById('galGrid');if(g2)renderGallery(g2);});
     }
     d.title=g.url;
     container.appendChild(d);
