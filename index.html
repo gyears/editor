@@ -1240,8 +1240,8 @@ function confirmInsert(){
         });
       }
       break;}
-    case 'hide':{const num=g('f1');const type_=g('f2');const cnt=g('f3');code=`[hide=${num},${type_}]${cnt}[/hide]\n`;break;}
-    case 'sell':{const amt=g('f1')||'0';const cnt=g('f2');code=`[sell=${amt}]${cnt}[/sell]\n`;break;}
+    case 'hide':{const num=String(parseInt(g('f1')||'0',10));const type_=g('f2');const cnt=g('f3');code=`[hide=${num},${type_}]${cnt}[/hide]\n`;break;}
+    case 'sell':{const amt=String(parseInt(g('f1')||'0',10));const cnt=g('f2');code=`[sell=${amt}]${cnt}[/sell]\n`;break;}
     case 'size':{const s=g('f1');if(!s){closeModal();return;}const txt=savedSel.text||'文字';code=`[size=${s}]${txt}[/size]`;break;}
     case 'colorpicker':{const c=selectedColor;const txt=savedSel.text||'文字';code=`[${colorModalTag}=${c}]${txt}[/${colorModalTag}]`;break;}
   }
