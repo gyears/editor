@@ -814,6 +814,7 @@ function buildLeftPanel(){
     ]},
     {key:'hide',title:lang==='zh'?'🔒 加密':'🔒 Hide',tags:[
       {tag:'hide',icon:'🔐',label:lang==='zh'?'加密內容':'Hidden Content',code:'hide',modal:true},
+      {tag:'sell',icon:'💰',label:lang==='zh'?'販售':'Sell',code:'sell',modal:true},
     ]},
   ];
 
@@ -857,7 +858,7 @@ function openModal(tag){
     xtag:'🔖 標籤',xrate:'⭐ 評分',xbtn:'🔘 按鈕連結',
     xyoutube:'▶️ YouTube 長影片',xsyoutube:'📱 YouTube直立影片',xmp4:'🎥 MP4 影片',xvmp4:'📹 直立 MP4',xmp3:'🎵 MP3 音樂',xtiktok:'🎶 TikTok',xsound:'🔊 SoundCloud',xsendvid:'📺 Sendvid 影片',xmap:'🗺 地圖座標（xmap）',xmaplink:'📍 地點名稱（xmaplink）',
     xspoiler:'🔽 劇透文字（xspoiler）',xsmall:'🔡 小字補充（xsmall）',ximg:'🖼 插入圖片',postimages:'📤 Postimages 半自動上傳',catbox:'🐱 貓盒 Catbox 上傳',gallery:'🗂 圖庫',
-    dialog:'🗨 對話泡泡',xtable:'📋 表格',hide:'🔐 加密內容',
+    dialog:'🗨 對話泡泡',xtable:'📋 表格',hide:'🔐 加密內容',sell:'💰 販售（sell）',
     size:'A↕ 文字大小',colorpicker:'🎨 顏色選擇',
   };
   document.getElementById('modalTitle').textContent=titles[tag]||tag;
@@ -984,6 +985,28 @@ function openModal(tag){
         <option value="5">熱心好評度</option>
       </select>
       <label>隱藏內容</label><textarea id="f3">${esc(selVal)}</textarea>`;break;
+    case 'sell':
+      html=`<div style="font-size:11px;color:var(--text2);background:rgba(240,180,41,0.08);border:1px solid rgba(240,180,41,0.2);border-radius:6px;padding:7px 11px;margin-bottom:10px;">
+        💡 販售內容：論壇會員可用流金幣購買查看
+      </div>
+      <label>販售金額（流金幣）</label>
+      <input id="f1" type="number" min="0" value="0" placeholder="例：100">
+      <label>販售內容</label>
+      <textarea id="f2" placeholder="輸入販售的內容...">${esc(selVal)}</textarea>
+      <div id="sellPreview" style="margin-top:10px;padding:10px 14px;background:#fffbe6;border:1px solid #e6d87a;border-radius:6px;font-size:12px;color:#555;">
+        <div style="color:#888;margin-bottom:6px;">💡 此帖售價 <b id="sellAmt">0</b> 流金幣，已有 0 人購買 <span style="color:#aaa;">[記錄] [購買]</span></div>
+        <div id="sellContent" style="color:#666;">（販售內容預覽）</div>
+      </div>`;
+      setTimeout(()=>{
+        const f1=document.getElementById('f1');
+        const f2=document.getElementById('f2');
+        const amt=document.getElementById('sellAmt');
+        const cnt=document.getElementById('sellContent');
+        if(f1)f1.addEventListener('input',()=>{if(amt)amt.textContent=f1.value||'0';});
+        if(f2)f2.addEventListener('input',()=>{if(cnt)cnt.textContent=f2.value||'（販售內容預覽）';});
+        if(f1)f1.focus();
+      },50);
+      break;
     case 'size':
       html=`<label>選擇文字大小（1~7）</label>
       <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;">${SIZES.map(s=>`<button onclick="insertSize(${s})" style="padding:5px 12px;border-radius:5px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-size:${8+s*2}px;cursor:pointer;">${s}</button>`).join('')}</div>
@@ -1218,6 +1241,7 @@ function confirmInsert(){
       }
       break;}
     case 'hide':{const num=g('f1');const type_=g('f2');const cnt=g('f3');code=`[hide=${num},${type_}]${cnt}[/hide]\n`;break;}
+    case 'sell':{const amt=g('f1')||'0';const cnt=g('f2');code=`[sell=${amt}]${cnt}[/sell]\n`;break;}
     case 'size':{const s=g('f1');if(!s){closeModal();return;}const txt=savedSel.text||'文字';code=`[size=${s}]${txt}[/size]`;break;}
     case 'colorpicker':{const c=selectedColor;const txt=savedSel.text||'文字';code=`[${colorModalTag}=${c}]${txt}[/${colorModalTag}]`;break;}
   }
@@ -1357,6 +1381,12 @@ function updatePreview(){
 
   // hide — show lock bar + content preview
   const hideTypes={'1':'發文數','2':'超激值','3':'回應好評度','4':'發文好評度','5':'熱心好評度','6':'歲月值'};
+  // sell preview
+  h=h.replace(/\[sell=(\d+)\]([\s\S]*?)\[\/sell\]/g,(_,amt,cnt)=>`
+    <div style="background:#fffbe6;border:1px solid #e6d87a;border-radius:6px;padding:10px 14px;margin:8px 0;">
+      <div style="font-size:12px;color:#888;margin-bottom:8px;">💡 此帖售價 <b style="color:#b8860b;">${amt}</b> 流金幣，已有 0 人購買 <span style="color:#aaa;font-size:11px;">[記錄] [購買]</span></div>
+      <div style="background:#f5f5f5;border-radius:4px;padding:8px 12px;font-size:13px;color:#555;">${cnt.trim()}</div>
+    </div>`);
   h=h.replace(/\[hide=(\d+),(\d+)\]([\s\S]*?)\[\/hide\]/g,(_,num,type,cnt)=>`<div class="hide-box"><div style="margin-bottom:6px;">🔒 需要 ${num} ${hideTypes[type]||'歲月值'} 才能觀看</div><div style="padding:8px;border-radius:5px;background:rgba(0,0,0,0.04);font-size:12px;color:#555;border:1px dashed #ddd;">${cnt.trim()||'（無內容）'}</div></div>`);
   h=h.replace(/\[hide=(\d+)\]([\s\S]*?)\[\/hide\]/g,(_,num,cnt)=>`<div class="hide-box"><div style="margin-bottom:6px;">🔒 需要 ${num} 歲月值 才能觀看</div><div style="padding:8px;border-radius:5px;background:rgba(0,0,0,0.04);font-size:12px;color:#555;border:1px dashed #ddd;">${cnt.trim()||'（無內容）'}</div></div>`);
 
