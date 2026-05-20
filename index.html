@@ -221,15 +221,19 @@ textarea#editor.dragging{
   .section-group {
     display: flex;
     flex-direction: row;
-    align-items: center;
+    align-items: stretch;
     border-bottom: none;
     border-right: 1px solid var(--border);
     flex-shrink: 0;
   }
-  .section-header { padding: 4px 8px; border-bottom: none; }
-  .section-header .sec-arrow { display: none; }
-  .section-header .sec-title { font-size: 9px; writing-mode: vertical-rl; text-orientation: mixed; padding: 2px 0; letter-spacing: 1px; }
-  .section-body { display: flex !important; flex-direction: row; overflow-x: auto; }
+  /* Hide section header entirely on mobile - just use border as divider */
+  .section-header { display: none; }
+  .section-body {
+    display: flex !important;
+    flex-direction: row;
+    overflow-x: visible;
+    align-items: center;
+  }
   .section-body.hidden { display: flex !important; }
 
   .tag-btn {
