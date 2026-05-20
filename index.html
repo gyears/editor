@@ -612,7 +612,24 @@ async function saveFile(){
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='流金.txt';a.click();
   showToast(t('saved'));
 }
-function copyCode(){if(!editor.value.trim())return;navigator.clipboard.writeText(editor.value).then(()=>showToast(t('copied')));}
+function fallbackCopy(){
+  try{
+    editor.select();
+    editor.setSelectionRange(0,99999); // for mobile
+    document.execCommand('copy');
+    showToast(t('copied'));
+  }catch(e){showToast('❌ 複製失敗，請手動複製');}
+}
+function copyCode(){
+  if(!editor.value.trim())return;
+  if(navigator.clipboard&&window.isSecureContext){
+    navigator.clipboard.writeText(editor.value)
+      .then(()=>showToast(t('copied')))
+      .catch(()=>fallbackCopy());
+  }else{
+    fallbackCopy();
+  }
+}
 /* ═══════════════════════════════════════════
    SPLIT / MERGE VIEW
 ═══════════════════════════════════════════ */
@@ -1264,6 +1281,9 @@ document.addEventListener('keydown',e=>{
 ═══════════════════════════════════════════ */
 function updatePreview(){
   let h=editor.value;
+  // XSS protection: escape raw HTML tags from user input (< > &)
+  // BBCode uses [] so this is safe - only raw HTML is neutralised
+  h=h.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
   // Extract [code] blocks FIRST (before any other processing) to preserve literal content
   const codePlaceholders=[];
   h=h.replace(/\[code\]([\s\S]*?)\[\/code\]/g,(match,inner)=>{
