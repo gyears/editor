@@ -399,9 +399,9 @@ textarea#editor.dragging{
 <div class="emoji-modal-overlay" id="emojiOverlay" onclick="closeEmojiPanel(event)">
   <div class="emoji-panel" id="emojiPanel">
     <div class="emoji-tabs">
-      <button class="emoji-tab active" onclick="switchEmojiTab(0,this)">洋蔥頭</button>
-      <button class="emoji-tab" onclick="switchEmojiTab(1,this)">旺旺</button>
-      <button class="emoji-tab" onclick="switchEmojiTab(2,this)">默認</button>
+      <button class="emoji-tab active" onclick="event.stopPropagation();switchEmojiTab(0,this)">洋蔥頭</button>
+      <button class="emoji-tab" onclick="event.stopPropagation();switchEmojiTab(1,this)">旺旺</button>
+      <button class="emoji-tab" onclick="event.stopPropagation();switchEmojiTab(2,this)">默認</button>
     </div>
     <div class="emoji-pages" id="emojiPages"></div>
     <div class="emoji-pagination" id="emojiPagination"></div>
@@ -1669,7 +1669,8 @@ function closeEmojiPanel(e){
   }
 }
 
-function switchEmojiTab(idx, btn){
+function switchEmojiTab(idx, btn, e){
+  if(e) e.stopPropagation();
   emojiTabIdx = idx;
   document.querySelectorAll('.emoji-tab').forEach((t,i)=>{
     t.classList.toggle('active', i===idx);
@@ -1677,7 +1678,8 @@ function switchEmojiTab(idx, btn){
   renderEmojiGrid();
 }
 
-function switchEmojiPage(pageIdx){
+function switchEmojiPage(pageIdx, e){
+  if(e) e.stopPropagation();
   emojiPageIdx[emojiTabIdx] = pageIdx;
   renderEmojiGrid();
 }
@@ -1712,7 +1714,7 @@ function renderEmojiGrid(){
     return;
   }
   const btns = Array.from({length: totalPages}, (_,i) =>
-    `<button class="emoji-page-btn${i===pageIdx?' active':''}" onclick="switchEmojiPage(${i})">${i+1}</button>`
+    `<button class="emoji-page-btn${i===pageIdx?' active':''}" onclick="event.stopPropagation();switchEmojiPage(${i})">${i+1}</button>`
   ).join('');
   paginDiv.innerHTML = btns;
 }
@@ -1726,8 +1728,10 @@ function insertEmoji(code){
 document.addEventListener('click', e=>{
   const overlay = document.getElementById('emojiOverlay');
   const trigger = document.getElementById('emojiBtnTrigger');
+  const panel = document.getElementById('emojiPanel');
   if(overlay && overlay.classList.contains('active')){
-    if(!overlay.contains(e.target) && e.target !== trigger){
+    // Close only if click is outside the panel AND outside the trigger button
+    if(panel && !panel.contains(e.target) && e.target !== trigger){
       overlay.classList.remove('active');
     }
   }
