@@ -554,28 +554,70 @@ function checkSel(){
   if(has){
     savedSel={start:s,end:e,text:editor.value.slice(s,e)};
   } else {
-    savedSel={start:s,end:s,text:''};
+    // Don't clear savedSel here - only clear via clearSavedSel()
+    // This prevents mobile button-tap from resetting selection before wrap fires
   }
   document.body.classList.toggle('has-selection',has);
   document.getElementById('selectionBar').classList.toggle('visible',has);
 }
+
+function clearSavedSel(){
+  savedSel={start:0,end:0,text:''};
+  document.body.classList.remove('has-selection');
+  document.getElementById('selectionBar').classList.remove('visible');
+}
+
+// selectionchange fires on mobile when user selects text via system menu
+document.addEventListener('selectionchange',()=>{
+  if(document.activeElement===editor){
+    const s=editor.selectionStart, e=editor.selectionEnd;
+    if(s!==e){
+      savedSel={start:s,end:e,text:editor.value.slice(s,e)};
+      document.body.classList.add('has-selection');
+      document.getElementById('selectionBar').classList.add('visible');
+    }
+  }
+});
+
 document.addEventListener('mousedown',e=>{
   if(e.target!==editor && !editor.contains(e.target)){
+    // Delay check: if user tapped a toolbar button, selection is still valid
+    // Only clear if selection is truly gone after a longer delay
     setTimeout(()=>{
-      if(editor.selectionStart===editor.selectionEnd){
-        savedSel={start:0,end:0,text:''};
-        document.body.classList.remove('has-selection');
-        document.getElementById('selectionBar').classList.remove('visible');
+      if(editor.selectionStart===editor.selectionEnd && savedSel.text){
+        // Check again - mobile may restore selection
+        const stillSelected=editor.selectionStart!==editor.selectionEnd;
+        if(!stillSelected){
+          // Check if we're in the middle of a wrap operation (give it 300ms)
+          setTimeout(()=>{
+            if(editor.selectionStart===editor.selectionEnd){
+              clearSavedSel();
+            }
+          },300);
+        }
       }
-    },150);
+    },50);
   }
 });
 
 // Re-read live selection right before wrapping (fixes mobile select-all bug)
 function getLiveSel(){
   const s=editor.selectionStart, e=editor.selectionEnd;
-  if(s!==e) return {start:s,end:e,text:editor.value.slice(s,e)};
-  return savedSel;
+  // If editor has an active selection, use it and update savedSel
+  if(s!==e){
+    const liveText=editor.value.slice(s,e);
+    // Only update savedSel if live selection is different from saved
+    if(liveText!==savedSel.text){
+      savedSel={start:s,end:e,text:liveText};
+    }
+    return {start:s,end:e,text:liveText};
+  }
+  // On mobile, tapping a button blurs editor and resets selection to 0
+  // So we fall back to savedSel which was captured by selectionchange
+  if(savedSel.text){
+    return savedSel;
+  }
+  return {start:s,end:e,text:''};
 }
 
 /* ═══════════════════════════════════════════
@@ -596,18 +638,23 @@ function wrapSel(tag,attr){
   editor.selectionStart=start;
   editor.selectionEnd=start+wrapped.length;
   editor.focus();
-  // Update savedSel to the new wrapped content (for chaining multiple wraps)
-  savedSel={start:start,end:start+wrapped.length,text:wrapped};
-  // Keep selection bar visible so user can keep wrapping
-  document.body.classList.add('has-selection');
-  document.getElementById('selectionBar').classList.add('visible');
+  // Clear savedSel after wrapping to prevent re-wrapping on next tap
+  savedSel={start:start+wrapped.length,end:start+wrapped.length,text:''};
+  document.body.classList.remove('has-selection');
+  document.getElementById('selectionBar').classList.remove('visible');
   updatePreview();updateStats();
 }
 const directWrap=['xgold','xcenter','xgban','xnote','xwarn','xblue','xgreen','xred','xinfo','xglass','xsmall','quote','xquote','xtag','b','i','u','strike'];
 function wrapOrModal(tag){
   const live=getLiveSel();
-  if(live.text&&directWrap.includes(tag)){wrapSel(tag);}
-  else{openModal(tag);}
+  if(live.text && directWrap.includes(tag)){
+    wrapSel(tag);
+  } else if(live.text && !directWrap.includes(tag)){
+    // Has selection but needs modal - prefill modal with selected text
+    openModal(tag);
+  } else {
+    openModal(tag);
+  }
 }
 function wrapFmt(tag,attr){
   const live=getLiveSel();
