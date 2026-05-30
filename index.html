@@ -2,20 +2,32 @@
 <html lang="zh-TW" id="htmlRoot">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, interactive-widget=resizes-content">
 <title>流金編輯器</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 <style>
+/* ══════════════════════════════════════════
+   CSS VARIABLES — DARK & LIGHT THEMES
+══════════════════════════════════════════ */
 :root {
   --bg:#0f1117;--surface:#181c27;--surface2:#1e2333;--border:#2a3045;
   --gold:#f0b429;--gold2:#ffd166;--text:#e8eaf0;--text2:#8b92a8;
   --red:#ef4444;--blue:#3b82f6;--green:#22c55e;--radius:10px;
+  --panel-right-bg:#fff;--preview-color:#333;--preview-bg:#fff;
+  --panel-right-header:#f5f5f0;--panel-right-border:#ddd;
+}
+body.light-theme {
+  --bg:#f5f6fa;--surface:#ffffff;--surface2:#eef0f5;--border:#d0d5e0;
+  --text:#1a1d2e;--text2:#5a6080;
+  --panel-right-bg:#ffffff;--preview-color:#222;--preview-bg:#fff;
+  --panel-right-header:#f0f0f0;--panel-right-border:#ddd;
 }
 *{box-sizing:border-box;margin:0;padding:0;}
 body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-serif;height:100vh;display:flex;flex-direction:column;font-size:14px;overflow:hidden;}
 
 /* ── HEADER ── */
 header{background:linear-gradient(135deg,#181c27,#1a1f30);border-bottom:1px solid var(--border);padding:10px 18px;display:flex;align-items:center;gap:12px;z-index:100;flex-wrap:wrap;flex-shrink:0;}
+body.light-theme header{background:linear-gradient(135deg,#e8ecf5,#dde2f0);}
 .logo{font-size:17px;font-weight:700;color:var(--gold);letter-spacing:.5px;}
 .subtitle{font-size:11px;color:var(--text2);}
 .header-actions{margin-left:auto;display:flex;gap:6px;align-items:center;flex-wrap:wrap;}
@@ -68,15 +80,100 @@ body.has-selection .tag-btn.wrappable:hover{border-left-color:var(--gold);backgr
 
 textarea#editor{flex:1;background:var(--bg);border:none;outline:none;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:13px;line-height:1.7;padding:14px;resize:none;caret-color:var(--gold);overflow-y:auto;min-height:0;}
 textarea#editor::selection{background:rgba(240,180,41,.2);}
+body.light-theme textarea#editor{color:#1a1d2e;}
 
 .editor-footer{padding:6px 14px;background:var(--surface);border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-shrink:0;flex-wrap:wrap;gap:4px;}
-.footer-stats{font-size:11px;color:var(--text2);display:flex;gap:12px;}
+.footer-stats{font-size:11px;color:var(--text2);display:flex;gap:10px;flex-wrap:wrap;}
 
-/* ── RIGHT PANEL ── */
-.panel-right{display:flex;flex-direction:column;overflow:hidden;background:#fff;}
-.panel-right .panel-header{background:#f5f5f0;border-bottom:1px solid #ddd;}
+/* ── RIGHT PANEL (preview) ── */
+.panel-right{display:flex;flex-direction:column;overflow:hidden;background:var(--preview-bg);position:relative;}
+.panel-right .panel-header{background:var(--panel-right-header);border-bottom:1px solid var(--panel-right-border);}
 .panel-right .panel-header h3{color:#666;}
-#preview{flex:1;overflow-y:auto;padding:18px 22px;font-family:'Noto Sans TC',sans-serif;font-size:14px;line-height:1.8;color:#333;background:#fff;}
+#preview{flex:1;overflow-y:auto;padding:18px 22px;font-family:'Noto Sans TC',sans-serif;font-size:14px;line-height:1.8;color:var(--preview-color);background:var(--preview-bg);}
+
+/* ── PANEL 4 (gallery/draft) — fixed right sidebar ── */
+.panel-four{
+  position:fixed;top:0;right:0;bottom:0;
+  width:320px;
+  display:flex;flex-direction:column;overflow:hidden;
+  background:var(--surface);border-left:1px solid var(--border);
+  z-index:150;
+  box-shadow:-4px 0 20px rgba(0,0,0,.25);
+  /* smooth slide-in */
+  transform:translateX(100%);
+  transition:transform .22s cubic-bezier(.4,0,.2,1);
+}
+.panel-four.open{transform:translateX(0);}
+.panel-four .p4-header{padding:10px 14px;background:var(--surface2);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.panel-four .p4-header h3{font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;}
+.panel-four .p4-body{flex:1;overflow-y:auto;padding:12px;}
+.panel-four .p4-body::-webkit-scrollbar{width:4px;}
+.panel-four .p4-body::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px;}
+
+/* ── FLOATING BUTTONS (gallery & draft) ── */
+.float-btns{position:absolute;bottom:16px;right:16px;display:flex;flex-direction:column;gap:10px;z-index:50;}
+/* merged-mode float btns: fixed to bottom-right of viewport */
+.float-btns-merged{position:fixed;bottom:20px;right:20px;z-index:140;}
+.float-btn{width:48px;height:48px;border-radius:50%;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:20px;box-shadow:0 4px 14px rgba(0,0,0,.3);transition:all .2s;position:relative;}
+.float-btn.active{box-shadow:0 0 0 3px var(--gold),0 4px 14px rgba(0,0,0,.3);}
+.float-btn-gallery{background:#1e2333;}
+.float-btn-gallery:hover{background:#2a3045;}
+.float-btn-draft{background:#1e2333;}
+.float-btn-draft:hover{background:#2a3045;}
+body.light-theme .float-btn-gallery,body.light-theme .float-btn-draft{background:#e0e4ef;box-shadow:0 4px 14px rgba(0,0,0,.15);}
+body.light-theme .float-btn-gallery:hover,body.light-theme .float-btn-draft:hover{background:#cdd2e8;}
+
+/* ── GALLERY MODAL (original grid style) ── */
+.gallery-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px;max-height:420px;overflow-y:auto;padding-right:2px;}
+.gallery-grid::-webkit-scrollbar{width:4px;}
+.gallery-grid::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px;}
+.gallery-item{position:relative;cursor:pointer;border:2px solid transparent;border-radius:8px;overflow:hidden;}
+.gallery-item:hover{border-color:var(--gold);}
+.gallery-item img{width:100%;height:100%;object-fit:cover;display:block;}
+.gallery-item canvas{width:100%;height:100%;display:block;background:#111;}
+.gallery-item .gal-placeholder{width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;background:#1a1a1a;font-size:28px;}
+.gallery-item .gal-placeholder span{font-size:9px;color:var(--text2);font-family:'JetBrains Mono',monospace;word-break:break-all;padding:0 4px;text-align:center;}
+.gallery-item .gal-del{position:absolute;top:3px;right:3px;background:rgba(0,0,0,.8);color:#fff;border:none;border-radius:4px;padding:2px 6px;font-size:11px;cursor:pointer;opacity:0;transition:opacity .15s;line-height:1.4;z-index:2;}
+.gallery-item:hover .gal-del{opacity:1;}
+.gallery-item .gal-label{position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.6);color:#fff;font-size:9px;padding:3px 5px;text-overflow:ellipsis;overflow:hidden;white-space:nowrap;text-align:center;pointer-events:none;}
+.gallery-empty{color:var(--text2);font-size:12px;text-align:center;padding:24px 10px;grid-column:1/-1;line-height:1.6;}
+
+/* ── CATBOX UPLOAD ── */
+.cb-drag-over{border-color:var(--gold)!important;background:rgba(240,180,41,.06)!important;}
+.cb-item{display:flex;align-items:center;gap:10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 10px;}
+.cb-thumb{width:48px;height:48px;border-radius:6px;object-fit:cover;flex-shrink:0;background:var(--bg);display:flex;align-items:center;justify-content:center;font-size:22px;overflow:hidden;}
+.cb-thumb img,.cb-thumb video{width:100%;height:100%;object-fit:cover;border-radius:6px;}
+.cb-info{flex:1;min-width:0;}
+.cb-name{font-size:11px;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.cb-status{font-size:11px;margin-top:3px;}
+.cb-bar-wrap{height:4px;background:var(--border);border-radius:2px;margin-top:5px;overflow:hidden;}
+.cb-bar{height:100%;background:var(--gold);border-radius:2px;width:0%;transition:width .2s;}
+.cb-url-row{display:flex;align-items:center;gap:6px;margin-top:5px;}
+.cb-url-box{font-size:10px;font-family:'JetBrains Mono',monospace;color:var(--gold);background:var(--bg);border:1px solid var(--border);border-radius:4px;padding:2px 7px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;cursor:pointer;}
+.cb-insert-btn{flex-shrink:0;background:var(--gold);color:#000;border:none;border-radius:5px;padding:3px 10px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;}
+.cb-insert-btn:hover{background:var(--gold2);}
+
+/* ── CATBOX LEFT PANEL BUTTON label update ── */
+.gal-list{display:flex;flex-direction:column;gap:8px;}
+.gal-row{display:flex;align-items:center;gap:8px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;overflow:hidden;cursor:pointer;transition:border-color .15s;}
+.gal-row:hover{border-color:var(--gold);}
+.gal-row-thumb{width:64px;height:64px;flex-shrink:0;background:var(--bg);overflow:hidden;position:relative;}
+.gal-row-thumb img{width:100%;height:100%;object-fit:cover;display:block;}
+.gal-row-thumb .gal-thumb-ph{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:24px;}
+.gal-row-info{flex:1;min-width:0;padding:6px 0;}
+.gal-row-type{font-size:9px;color:var(--text2);font-family:'JetBrains Mono',monospace;text-transform:uppercase;margin-bottom:2px;}
+.gal-row-url{font-size:10px;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:160px;}
+.gal-row-del{flex-shrink:0;background:none;border:none;color:var(--text2);cursor:pointer;padding:6px 10px;font-size:14px;transition:color .15s;}
+.gal-row-del:hover{color:var(--red);}
+
+/* ── DRAFT PANEL ── */
+.draft-list{display:flex;flex-direction:column;gap:8px;}
+.draft-item{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;cursor:pointer;transition:border-color .15s;}
+.draft-item:hover{border-color:var(--gold);}
+.draft-item-time{font-size:10px;color:var(--text2);margin-bottom:4px;font-family:'JetBrains Mono',monospace;}
+.draft-item-preview{font-size:12px;color:var(--text);line-height:1.5;overflow:hidden;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;}
+.draft-item-actions{display:flex;gap:6px;margin-top:8px;}
+.draft-empty{color:var(--text2);font-size:12px;text-align:center;padding:24px 10px;line-height:1.6;}
 
 /* ── BUTTONS ── */
 .btn{padding:5px 12px;border-radius:6px;border:none;cursor:pointer;font-family:inherit;font-size:11px;font-weight:600;transition:all .15s;}
@@ -86,11 +183,14 @@ textarea#editor::selection{background:rgba(240,180,41,.2);}
 .btn-ghost:hover{color:var(--text);border-color:var(--text2);}
 .btn-blue{background:#1d4ed8;color:#fff;}
 .btn-blue:hover{background:#2563eb;}
+.btn-sm{padding:3px 8px;font-size:10px;}
+.btn-danger{background:none;border:1px solid #e06c75;color:#e06c75;padding:3px 8px;border-radius:5px;font-size:11px;cursor:pointer;font-family:inherit;transition:all .15s;}
+.btn-danger:hover{background:#e06c75;color:#fff;}
 
 /* ── MODAL ── */
 .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200;align-items:center;justify-content:center;}
 .modal-overlay.active{display:flex;}
-.modal{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:22px;width:460px;max-width:92vw;max-height:90vh;overflow-y:auto;}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:22px;width:520px;max-width:94vw;max-height:90vh;overflow-y:auto;}
 .modal h4{font-size:14px;font-weight:700;margin-bottom:14px;color:var(--gold);}
 .modal label{display:block;font-size:11px;color:var(--text2);margin-bottom:3px;margin-top:10px;}
 .modal input,.modal textarea,.modal select{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:7px 11px;color:var(--text);font-family:inherit;font-size:12px;outline:none;transition:border .15s;}
@@ -119,20 +219,6 @@ textarea#editor::selection{background:rgba(240,180,41,.2);}
 .postimg-open-btn{display:inline-block;margin-top:5px;background:var(--gold);color:#000;border:none;border-radius:5px;padding:4px 12px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;}
 .postimg-open-btn:hover{background:var(--gold2);}
 
-/* gallery */
-.gallery-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px;max-height:420px;overflow-y:auto;padding-right:2px;}
-.gallery-grid::-webkit-scrollbar{width:4px;}
-.gallery-grid::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px;}
-.gallery-item{position:relative;cursor:pointer;border:2px solid transparent;border-radius:8px;overflow:hidden;background:var(--bg2);}
-.gallery-item:hover{border-color:var(--gold);}
-.gallery-item img{width:100%;height:100%;object-fit:cover;display:block;}
-.gallery-item canvas{width:100%;height:100%;display:block;background:#111;}
-.gallery-item .gal-placeholder{width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;background:#1a1a1a;font-size:28px;}
-.gallery-item .gal-placeholder span{font-size:9px;color:var(--text2);font-family:'JetBrains Mono',monospace;word-break:break-all;padding:0 4px;text-align:center;}
-.gallery-item .gal-del{position:absolute;top:3px;right:3px;background:rgba(0,0,0,.8);color:#fff;border:none;border-radius:4px;padding:2px 6px;font-size:11px;cursor:pointer;opacity:0;transition:opacity .15s;line-height:1.4;z-index:2;}
-.gallery-item:hover .gal-del{opacity:1;}
-.gallery-item .gal-label{position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.6);color:#fff;font-size:9px;padding:3px 5px;text-overflow:ellipsis;overflow:hidden;white-space:nowrap;text-align:center;pointer-events:none;}
-.gallery-empty{color:var(--text2);font-size:12px;text-align:center;padding:24px 10px;grid-column:1/-1;line-height:1.6;}
 /* color picker row */
 .color-row{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:6px;}
 .color-swatch{width:22px;height:22px;border-radius:4px;border:2px solid transparent;cursor:pointer;transition:transform .15s;}
@@ -140,13 +226,11 @@ textarea#editor::selection{background:rgba(240,180,41,.2);}
 .color-custom{width:32px;height:28px;border:1px solid var(--border);border-radius:4px;background:var(--bg);cursor:pointer;padding:2px;}
 
 /* ── TOAST ── */
-textarea#editor.dragging{
-  border:2px dashed var(--gold)!important;
-  background:rgba(240,180,41,0.05)!important;
-  border-color:#c8a96b!important;
-  background:#1a1a0f!important;
-  box-shadow:0 0 0 3px rgba(200,169,107,.2);
-}
+.toast{position:fixed;bottom:20px;right:20px;background:var(--gold);color:#000;padding:9px 18px;border-radius:8px;font-size:12px;font-weight:700;opacity:0;transform:translateY(8px);transition:all .3s;z-index:999;pointer-events:none;}
+.toast.show{opacity:1;transform:translateY(0);}
+
+/* Emoji */
+textarea#editor.dragging{border:2px dashed var(--gold)!important;}
 .emoji-modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:300;align-items:flex-start;justify-content:flex-start;}
 .emoji-modal-overlay.active{display:flex;}
 .emoji-panel{background:#fff;border:1px solid #ddd;border-radius:10px;box-shadow:0 8px 32px rgba(0,0,0,.2);width:320px;max-width:95vw;overflow:hidden;margin:54px 0 0 10px;}
@@ -165,8 +249,6 @@ textarea#editor.dragging{
 .emoji-page-btn{width:24px;height:24px;border-radius:4px;border:1px solid #ddd;background:#f5f5f5;cursor:pointer;font-size:11px;font-weight:600;color:#666;transition:all .15s;}
 .emoji-page-btn.active{background:#b8860b;color:#fff;border-color:#b8860b;}
 .emoji-page-btn:hover:not(.active){background:#ffe;border-color:#b8860b;}
-.toast{position:fixed;bottom:20px;right:20px;background:var(--gold);color:#000;padding:9px 18px;border-radius:8px;font-size:12px;font-weight:700;opacity:0;transform:translateY(8px);transition:all .3s;z-index:999;pointer-events:none;}
-.toast.show{opacity:1;transform:translateY(0);}
 
 /* ── FORUM PREVIEW STYLES ── */
 #preview .xgold-box{border-left:4px solid #c8a000;background:#fffbe6;padding:8px 14px;margin:8px 0;font-weight:600;color:#5a4500;}
@@ -209,87 +291,93 @@ textarea#editor.dragging{
    MOBILE RESPONSIVE
 ══════════════════════════════════════════ */
 @media (max-width: 768px) {
-  body { height: auto; overflow: auto; }
+  /* ── 固定版面，不隨鍵盤縮放 ── */
+  body { height:100vh; overflow:hidden; }
+  header { padding:7px 10px; gap:6px; flex-wrap:nowrap; overflow-x:auto; }
+  header::-webkit-scrollbar{ display:none; }
+  .logo { font-size:14px; flex-shrink:0; }
+  .hint-badge { display:none; }
+  .header-actions { gap:3px; flex-wrap:nowrap; flex-shrink:0; }
+  .btn { padding:4px 8px; font-size:10px; white-space:nowrap; }
 
-  header { padding: 8px 12px; gap: 8px; }
-  .logo { font-size: 15px; }
-  .hint-badge { display: none; }
-  .header-actions { gap: 4px; flex-wrap: wrap; }
-  .btn { padding: 4px 9px; font-size: 11px; }
-
+  /* ── 主版面：固定高度 flex 直排 ── */
   .main {
-    display: flex;
-    flex-direction: column;
-    height: auto;
-    overflow: visible;
+    display:flex; flex-direction:column;
+    height:calc(100vh - 48px); /* 100vh 扣掉 header */
+    overflow:hidden;
   }
 
-  /* Left panel: horizontal scrollable tag strip */
+  /* ── 左側面板：橫向捲動工具列 ── */
   .panel-left {
-    border-right: none;
-    border-bottom: 1px solid var(--border);
-    overflow-x: auto;
-    overflow-y: hidden;
-    display: flex;
-    flex-direction: row;
-    max-height: none;
-    padding: 6px 4px;
-    gap: 0;
+    border-right:none; border-bottom:1px solid var(--border);
+    overflow-x:auto; overflow-y:hidden;
+    display:flex; flex-direction:row;
+    max-height:72px; min-height:60px;
+    flex-shrink:0;
+    padding:4px 6px; gap:0;
+    scroll-behavior:smooth;
+    -webkit-overflow-scrolling:touch;
   }
+  .panel-left::-webkit-scrollbar{ display:none; }
   .section-group {
-    display: flex;
-    flex-direction: row;
-    align-items: stretch;
-    border-bottom: none;
-    border-right: 1px solid var(--border);
-    flex-shrink: 0;
+    display:flex; flex-direction:row; align-items:stretch;
+    border-bottom:none; border-right:1px solid var(--border);
+    flex-shrink:0;
   }
-  /* Hide section header entirely on mobile - just use border as divider */
-  .section-header { display: none; }
-  .section-body {
-    display: flex !important;
-    flex-direction: row;
-    overflow-x: visible;
-    align-items: center;
-  }
-  .section-body.hidden { display: flex !important; }
-
+  .section-header { display:none; }
+  .section-body { display:flex !important; flex-direction:row; align-items:center; }
+  .section-body.hidden { display:flex !important; }
   .tag-btn {
-    flex-direction: column;
-    gap: 2px;
-    padding: 6px 8px;
-    min-width: 52px;
-    border-left: none;
-    border-bottom: 2px solid transparent;
-    font-size: 11px;
-    white-space: nowrap;
+    flex-direction:column; gap:2px;
+    padding:6px 10px; min-width:54px;
+    border-left:none; border-bottom:2px solid transparent;
+    font-size:10px; white-space:nowrap;
+    touch-action:manipulation; /* 防止 300ms 延遲 & 誤觸 */
   }
-  .tag-btn:hover { border-left: none; border-bottom-color: var(--gold); }
-  .tag-btn .code { display: none; }
-  .tag-btn .wrap-hint { display: none !important; }
-  .tag-btn .icon { font-size: 16px; }
-  .tag-btn .label { font-size: 10px; }
+  .tag-btn:hover { border-left:none; border-bottom-color:var(--gold); }
+  .tag-btn .code { display:none; }
+  .tag-btn .wrap-hint { display:none !important; }
+  .tag-btn .icon { font-size:17px; }
+  .tag-btn .label { font-size:10px; }
 
-  /* Middle: editor full width */
+  /* ── 中間編輯區：flex:1 填滿剩餘空間，textarea 獨立捲動 ── */
   .panel-mid {
-    height: auto;
-    min-height: 260px;
+    flex:1; min-height:0;
+    display:flex; flex-direction:column; overflow:hidden;
   }
-  .format-toolbar { gap: 2px; padding: 4px 6px; }
-  .fmt-btn { padding: 3px 7px; font-size: 11px; }
+  .format-toolbar { gap:2px; padding:4px 6px; flex-shrink:0; overflow-x:auto; flex-wrap:nowrap; }
+  .format-toolbar::-webkit-scrollbar{ display:none; }
+  .fmt-btn { padding:3px 7px; font-size:11px; flex-shrink:0; touch-action:manipulation; }
   textarea#editor {
-    min-height: 200px;
-    height: 200px;
-    flex: none;
-    overflow-y: auto;
+    flex:1; min-height:0;
+    height:auto !important;
+    overflow-y:auto;
+    -webkit-overflow-scrolling:touch;
+    /* 防止 iOS 自動縮放輸入框 */
+    font-size:16px !important;
   }
+  .editor-footer { flex-shrink:0; }
 
-  /* Preview: collapsible on mobile */
-  .panel-right { border-top: 1px solid var(--border); }
-  #preview { padding: 12px 14px; font-size: 13px; }
+  /* ── 預覽區：手機預設隱藏，由 JS toggleSplitMerge 控制 ── */
+  /* 不在此寫 display:none，改由 JS 設定，避免分欄時無法覆蓋 */
+  #preview { padding:12px 14px; font-size:13px; -webkit-overflow-scrolling:touch; }
 
-  /* Modal */
-  .modal { width: 95vw; padding: 16px; }
+  .modal { width:95vw; padding:16px; }
+
+  .float-btns { bottom:12px; right:12px; }
+  .float-btn { width:44px; height:44px; font-size:18px; touch-action:manipulation; }
+
+  /* ── Panel 4：底部抽屜 ── */
+  .panel-four {
+    top:auto; right:0; bottom:0; left:0;
+    width:100% !important; height:65vh;
+    border-left:none; border-top:1px solid var(--border);
+    box-shadow:0 -4px 20px rgba(0,0,0,.3);
+    transform:translateY(100%);
+    transition:transform .22s cubic-bezier(.4,0,.2,1);
+  }
+  .panel-four.open { transform:translateY(0); }
+  .float-btns-merged { bottom:16px; right:16px; }
 }
 </style>
 </head>
@@ -297,16 +385,17 @@ textarea#editor.dragging{
 
 <header>
   <div class="logo">✦ 流金編輯器</div>
-
   <div class="header-actions">
     <div class="hint-badge" data-i18n="selHint">💡 <b>選取文字</b>後按功能鍵可包裹標籤</div>
     <button class="btn btn-ghost" onclick="toggleLang()" id="langBtn">🌐 EN</button>
+    <button class="btn btn-ghost" onclick="toggleTheme()" id="themeBtn">☀️ 淺色</button>
+    <button class="btn btn-ghost" onclick="saveDraft()" title="儲存目前內容為草稿">📝 儲存草稿</button>
     <button class="btn btn-ghost" onclick="saveFile()" title="另存新檔">💾 <span data-i18n="save">另存新檔</span></button>
     <button class="btn btn-gold" onclick="copyCode()">📋 <span data-i18n="copyAll">複製全部</span></button>
   </div>
 </header>
 
-<div class="main">
+<div class="main" id="mainGrid">
 <!-- ═══ LEFT PANEL ═══ -->
 <div class="panel-left" id="leftPanel"></div>
 
@@ -315,7 +404,7 @@ textarea#editor.dragging{
   <div class="panel-header">
     <h3 data-i18n="editor">✏️ 編輯器</h3>
     <div style="display:flex;gap:4px;flex-wrap:wrap;align-items:center;">
-      <button class="btn btn-ghost" onclick="convertS2T()" title="簡體轉繁體（OpenCC）">簡→繁</button>
+      <button class="btn btn-ghost" onclick="convertS2T()" title="簡體轉繁體">簡→繁</button>
       <button class="btn btn-ghost" id="splitMergeBtn" onclick="toggleSplitMerge()" title="分欄/合併預覽欄">合併</button>
       <button class="btn btn-ghost" id="previewToggleBtn" onclick="showMergedPreview()" title="預覽文章效果" style="display:none;">預覽</button>
       <button class="btn btn-ghost" onclick="stripBBCodeSel()" title="清除反白文字中的BBCode語法">選擇清除</button>
@@ -346,9 +435,8 @@ textarea#editor.dragging{
     <button class="fmt-btn" onclick="wrapFmt('code')" title="程式碼（原樣顯示）">&lt;/&gt;</button>
     <button class="fmt-btn" onclick="wrapFmt('url')" title="超連結">🔗</button>
     <div class="fmt-sep"></div>
-    <button class="fmt-btn" onclick="wrapFmt('fly')" title="飛行文字效果">飛行</button>
-    <button class="fmt-btn" onclick="wrapFmt('move')" title="跑馬燈捲動效果">跑馬燈</button>
-  
+    <button class="fmt-btn" onclick="wrapFmt('fly')" title="飛行文字">飛行</button>
+    <button class="fmt-btn" onclick="wrapFmt('move')" title="跑馬燈">跑馬燈</button>
     <div class="fmt-sep"></div>
     <button class="fmt-btn" onclick="toggleEmojiPanel(event)" title="插入表情" id="emojiBtnTrigger">😊 表情</button>
   </div>
@@ -358,28 +446,51 @@ textarea#editor.dragging{
     placeholder="點功能按鈕插入 BBCode，或直接輸入..."
     oninput="onEditorInput()"
     oncompositionstart="isComposing=true"
-    oncompositionend="isComposing=false;onEditorInput()"
+    oncompositionend="isComposing=false;onEditorInput();schedulePreview()"
     onmouseup="checkSel()"
     onkeyup="checkSel()"
     onkeydown="handleKeyDown(event)"
   ></textarea>
   <div class="editor-footer">
     <div class="footer-stats">
-      <span id="charCount">0 字元</span>
-      <span id="zhCount">中文：0 字</span>
+      <span id="charCount">文字：0字</span>
+      <span id="imgCount">圖片：0</span>
+      <span id="vidCount">影片：0</span>
     </div>
     <button class="btn btn-ghost" style="font-size:10px;" onclick="updatePreview()">🔄 <span data-i18n="refresh">重新預覽</span></button>
   </div>
 </div>
 
-<!-- ═══ RIGHT PANEL ═══ -->
-<div class="panel-right">
+<!-- ═══ RIGHT PANEL (preview) ═══ -->
+<div class="panel-right" id="panelRight">
   <div class="panel-header">
     <h3 data-i18n="preview">👁 論壇預覽</h3>
   </div>
   <div id="preview"><p style="color:#aaa;font-size:13px;text-align:center;margin-top:50px;" data-i18n="previewHint">← 從左側選擇標籤開始</p></div>
+
+  <!-- Floating buttons (split mode — inside panelRight) -->
+  <div class="float-btns" id="floatBtnsSplit">
+    <button class="float-btn float-btn-gallery" id="floatGallerySplit" onclick="togglePanel4('gallery')" title="圖庫">🗂</button>
+    <button class="float-btn float-btn-draft" id="floatDraftSplit" onclick="togglePanel4('draft')" title="草稿">📝</button>
+  </div>
 </div>
+</div><!-- end .main -->
+
+<!-- ═══ PANEL 4 (gallery / draft) — outside .main, sibling at body level ═══ -->
+<div class="panel-four" id="panelFour" style="display:none;">
+  <div class="p4-header">
+    <h3 id="p4Title">圖庫</h3>
+    <button class="btn btn-ghost btn-sm" onclick="closePanel4()">✕</button>
+  </div>
+  <div class="p4-body" id="p4Body"></div>
 </div>
+
+<!-- Floating buttons (merged mode — fixed position, shown when panelRight hidden) -->
+<div class="float-btns float-btns-merged" id="floatBtnsMerged" style="display:none;">
+  <button class="float-btn float-btn-gallery" id="floatGalleryMerged" onclick="togglePanel4('gallery')" title="圖庫">🗂</button>
+  <button class="float-btn float-btn-draft" id="floatDraftMerged" onclick="togglePanel4('draft')" title="草稿">📝</button>
+</div>
+
 
 <!-- ═══ MODAL ═══ -->
 <div class="modal-overlay" id="modalOverlay" onclick="closeModalOverlay(event)">
@@ -410,12 +521,28 @@ textarea#editor.dragging{
 
 <script>
 /* ═══════════════════════════════════════════
+   THEME
+═══════════════════════════════════════════ */
+let isLightTheme = false;
+try{ isLightTheme = localStorage.getItem('liujin_theme') === 'light'; }catch(e){}
+function applyTheme(){
+  document.body.classList.toggle('light-theme', isLightTheme);
+  document.getElementById('themeBtn').textContent = isLightTheme ? '🌙 深色' : '☀️ 淺色';
+}
+function toggleTheme(){
+  isLightTheme = !isLightTheme;
+  try{ localStorage.setItem('liujin_theme', isLightTheme ? 'light' : 'dark'); }catch(e){}
+  applyTheme();
+}
+applyTheme();
+
+/* ═══════════════════════════════════════════
    I18N
 ═══════════════════════════════════════════ */
 let lang = 'zh';
 const i18n = {
-  zh:{subtitle:'',selHint:'💡 <b>選取文字</b>後按功能鍵可包裹標籤',undo:'復原',save:'另存新檔',copyAll:'複製全部',editor:'✏️ 編輯器',clear:'清空',selActive:'已選取文字 — 點選功能鍵可包裹',preview:'👁 論壇預覽',previewHint:'← 從左側選擇標籤開始',refresh:'重新預覽',cancel:'取消',insert:'插入',charUnit:'字元',zhUnit:'中文：',insert_ok:'✅ 已插入！',copied:'✅ 已複製到剪貼簿！',saved:'✅ 已儲存為文字檔！',cleared:'已清空',confirmClear:'確定要清空編輯器嗎？'},
-  en:{subtitle:'',selHint:'💡 <b>Select text</b> then click a tag to wrap',undo:'Undo',save:'Save As',copyAll:'Copy All',editor:'✏️ Editor',clear:'Clear',selActive:'Text selected — click a tag to wrap',preview:'👁 Preview',previewHint:'← Select a tag from the left',refresh:'Refresh',cancel:'Cancel',insert:'Insert',charUnit:' chars',zhUnit:'CJK: ',insert_ok:'✅ Inserted!',copied:'✅ Copied to clipboard!',saved:'✅ Saved as text file!',cleared:'Cleared',confirmClear:'Clear the editor?'}
+  zh:{subtitle:'',selHint:'💡 <b>選取文字</b>後按功能鍵可包裹標籤',undo:'復原',save:'另存新檔',copyAll:'複製全部',editor:'✏️ 編輯器',clear:'清空',selActive:'已選取文字 — 點選功能鍵可包裹',preview:'👁 論壇預覽',previewHint:'← 從左側選擇標籤開始',refresh:'重新預覽',cancel:'取消',insert:'插入',insert_ok:'✅ 已插入！',copied:'✅ 已複製到剪貼簿！',saved:'✅ 已儲存為文字檔！',cleared:'已清空',confirmClear:'確定要清空編輯器嗎？'},
+  en:{subtitle:'',selHint:'💡 <b>Select text</b> then click a tag to wrap',undo:'Undo',save:'Save As',copyAll:'Copy All',editor:'✏️ Editor',clear:'Clear',selActive:'Text selected — click a tag to wrap',preview:'👁 Preview',previewHint:'← Select a tag from the left',refresh:'Refresh',cancel:'Cancel',insert:'Insert',insert_ok:'✅ Inserted!',copied:'✅ Copied to clipboard!',saved:'✅ Saved as text file!',cleared:'Cleared',confirmClear:'Clear the editor?'}
 };
 function t(k){return i18n[lang][k]||k;}
 function toggleLang(){lang=lang==='zh'?'en':'zh';document.getElementById('langBtn').textContent=lang==='zh'?'🌐 EN':'🌐 中文';document.querySelectorAll('[data-i18n]').forEach(el=>{const k=el.dataset.i18n;if(el.tagName==='INPUT'||el.tagName==='TEXTAREA'){el.placeholder=t(k)||el.placeholder;}else{el.innerHTML=i18n[lang][k]||el.innerHTML;}});buildLeftPanel();updatePreview();}
@@ -432,69 +559,83 @@ function redoAction(){if(undoPtr<undoStack.length-1){undoPtr++;editor.value=undo
 function handleKeyDown(e){
   if((e.ctrlKey||e.metaKey)&&e.key==='z'){e.preventDefault();undoAction();}
   if((e.ctrlKey||e.metaKey)&&(e.key==='y'||(e.shiftKey&&e.key==='z'))){e.preventDefault();redoAction();}
+  // Force undo checkpoint on Space / Enter / punctuation
+  const forceKeys=['Enter',' ','.','。','!','！','?','？',',','，'];
+  if(forceKeys.includes(e.key)){
+    clearTimeout(undoTimer);
+    undoTimer=setTimeout(()=>pushUndo(editor.value),50);
+  }
 }
+/* ═══════════════════════════════════════════
+   SMART BBCode AUTO-CLOSE
+   當使用者手動輸入 [b] 時自動補上 [/b]
+   游標停在兩個標籤中間
+═══════════════════════════════════════════ */
+function smartAutoClose(e){ /* 已移至 input 事件，此函數保留為空 */ }
+let isComposing=false;
+/* ─── 預覽 debounce timer ─── */
 let undoTimer;
 let saveEditorTimer;
-let isComposing=false;
+let previewTimer;
+function schedulePreview(){
+  clearTimeout(previewTimer);
+  previewTimer=setTimeout(()=>{ updatePreview(); updateStats(); },150);
+}
+
 function onEditorInput(){
   if(isComposing)return;
   clearTimeout(undoTimer);
-  undoTimer=setTimeout(()=>pushUndo(editor.value),400);
-  // Auto-save editor content to localStorage
+  undoTimer=setTimeout(()=>pushUndo(editor.value),800);
+  // Auto-save to localStorage
   clearTimeout(saveEditorTimer);
   saveEditorTimer=setTimeout(()=>{
     try{localStorage.setItem('liujin_editor_content',editor.value);}catch(e){}
-  },800);
-  // Auto-detect media links pasted into editor and save to gallery
+  },600);
+  // Auto-detect media
   const val=editor.value;
   let m;
-  // Postimages forum link [url=...][img]...[/img][/url]
   const imgRe=/\[url=([^\]]+)\]\[img\]([^\[]+)\[\/img\]\[\/url\]/g;
   while((m=imgRe.exec(val))!==null){addToGallery(m[2].trim(),'img');}
-  // [ximg] and [img]
   const ximgRe=/\[ximg\]([^\[]+)\[\/ximg\]/g;
   while((m=ximgRe.exec(val))!==null){addToGallery(m[1].trim(),'img');}
   const imgRe2=/\[img\]([^\[]+)\[\/img\]/g;
   while((m=imgRe2.exec(val))!==null){addToGallery(m[1].trim(),'img');}
-  // Video tags → save as 'vid' type
-  const vidTags=['xmp4','xvmp4'];
-  vidTags.forEach(tag=>{
-    const re=new RegExp('\\['+tag+'\\]([^\\[]+)\\[\\/'+ tag+'\\]','g');
+  ['xmp4','xvmp4'].forEach(tag=>{
+    const re=new RegExp('\\['+tag+'\\]([^\\[]+)\\[\\/'+tag+'\\]','g');
     while((m=re.exec(val))!==null){addToGallery(m[1].trim(),'vid');}
   });
   const svRe=/\[xsendvid\]([^\[]+)\[\/xsendvid\]/g;
   while((m=svRe.exec(val))!==null){addToGallery(m[1].trim(),'sendvid');}
-  // YouTube/TikTok → save as 'yt' type
   ['xyoutube','xsyoutube'].forEach(tag=>{
-    const re=new RegExp('\\['+tag+'\\]([^\\[]+)\\[\\/'+ tag+'\\]','g');
+    const re=new RegExp('\\['+tag+'\\]([^\\[]+)\\[\\/'+tag+'\\]','g');
     while((m=re.exec(val))!==null){addToGallery(m[1].trim(),'yt');}
   });
-  ['xtiktok'].forEach(tag=>{
-    const re=new RegExp('\\['+tag+'\\]([^\\[]+)\\[\\/'+ tag+'\\]','g');
-    while((m=re.exec(val))!==null){addToGallery(m[1].trim(),'tt');}
-  });
-  updatePreview();
-  updateStats();
+  const ttRe=/\[xtiktok\]([^\[]+)\[\/xtiktok\]/g;
+  while((m=ttRe.exec(val))!==null){addToGallery(m[1].trim(),'tt');}
+  schedulePreview();
 }
 
-
 /* ═══════════════════════════════════════════
-   GALLERY
+   GALLERY (max 50, list view)
 ═══════════════════════════════════════════ */
-// Gallery persisted in localStorage
-const MAX_GALLERY=30;
+const MAX_GALLERY=50;
 let gallery=[];
 try{const saved=localStorage.getItem('liujin_gallery');if(saved)gallery=JSON.parse(saved);}catch(e){}
 function saveGallery(){try{localStorage.setItem('liujin_gallery',JSON.stringify(gallery.slice(0,MAX_GALLERY)));}catch(e){}}
-function addToGallery(url,type='img'){if(gallery.find(g=>g.url===url))return;gallery.unshift({url,type,ts:Date.now()});if(gallery.length>MAX_GALLERY)gallery=gallery.slice(0,MAX_GALLERY);saveGallery();}
+function addToGallery(url,type='img'){if(!url)return;if(gallery.find(g=>g.url===url))return;gallery.unshift({url,type,ts:Date.now()});if(gallery.length>MAX_GALLERY)gallery=gallery.slice(0,MAX_GALLERY);saveGallery();}
 function clearGallery(){
-  if(!gallery.length)return;
+  if(!gallery.length){showToast('圖庫已是空的');return;}
   if(!confirm('確定要清空所有圖庫暫存嗎？此操作無法復原。'))return;
   gallery=[];saveGallery();
+  // Update modal gallery if open
   const grid=document.getElementById('galGrid');
   if(grid)renderGallery(grid);
+  // Update side panel if open
+  if(currentPanel4==='gallery')renderPanel4Gallery();
   showToast('🗑 已清空圖庫');
 }
+
+/* Original modal gallery (3-col grid) */
 function renderGallery(container){
   container.innerHTML='';
   const counter=document.getElementById('galCounter');
@@ -507,58 +648,356 @@ function renderGallery(container){
     const d=document.createElement('div');
     d.className='gallery-item';
     d.style.height=cellPx+'px';
-    const delBtn=`<button class="gal-del gal-del-${i}" title="移除">✕</button>`;
-    const shortName = g.url.split('/').pop().split('?')[0].slice(0,20)||g.url.slice(0,20);
+    const delBtn=`<button class="gal-del" title="移除">✕</button>`;
+    const shortName=g.url.split('/').pop().split('?')[0].slice(0,20)||g.url.slice(0,20);
     if(g.type==='img'){
       d.innerHTML=`<img src="${g.url}" style="width:100%;height:100%;object-fit:cover;display:block;" onerror="this.parentElement.innerHTML='<div class=\\'gal-placeholder\\'><span style=\\'font-size:26px;\\'>🖼</span><span>${shortName}</span></div>'+\`${delBtn}\`">${delBtn}<div class="gal-label">${shortName}</div>`;
       d.onclick=()=>{insertAtCursor(`[ximg]${g.url}[/ximg]\n`);closeModal();};
-      d.querySelector('.gal-del').addEventListener('click',e=>{e.stopPropagation();gallery.splice(i,1);saveGallery();const g2=document.getElementById('galGrid');if(g2)renderGallery(g2);});
     } else if(g.type==='vid'){
       const vidIdx='gvc'+i+'_'+Date.now();
       d.innerHTML=`<canvas id="${vidIdx}" style="width:100%;height:100%;display:block;background:#111;"></canvas><div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:26px;pointer-events:none;text-shadow:0 1px 4px #000;">▶</div>${delBtn}<div class="gal-label">${shortName}</div>`;
       (function(url,cid){setTimeout(()=>{const cv=document.getElementById(cid);if(!cv)return;const v=document.createElement('video');v.src=url;v.muted=true;v.playsInline=true;v.crossOrigin='anonymous';v.addEventListener('loadeddata',()=>{v.currentTime=0.5;});v.addEventListener('seeked',()=>{const sz=120;cv.width=sz;cv.height=sz;cv.getContext('2d').drawImage(v,0,0,sz,sz);v.remove();});v.addEventListener('error',()=>{if(cv.parentElement)cv.parentElement.innerHTML=`<div class="gal-placeholder"><span>🎞</span><span>${shortName}</span></div>${delBtn}`;});v.load();},150);})(g.url,vidIdx);
       d.onclick=()=>{insertAtCursor(`[xmp4]${g.url}[/xmp4]\n`);closeModal();};
-      d.querySelector('.gal-del').addEventListener('click',e=>{e.stopPropagation();gallery.splice(i,1);saveGallery();const g2=document.getElementById('galGrid');if(g2)renderGallery(g2);});
     } else if(g.type==='sendvid'){
       d.innerHTML=`<div class="gal-placeholder" style="background:#0a1628;">📺<span>${g.url}</span></div>${delBtn}<div class="gal-label">Sendvid</div>`;
       d.onclick=()=>{insertAtCursor(`[xsendvid]${g.url}[/xsendvid]\n`);closeModal();};
-      d.querySelector('.gal-del').addEventListener('click',e=>{e.stopPropagation();gallery.splice(i,1);saveGallery();const g2=document.getElementById('galGrid');if(g2)renderGallery(g2);});
     } else if(g.type==='yt'){
-      // Use YouTube thumbnail
       const ytId=g.url.replace(/\s/g,'');
-      d.innerHTML=`<img src="https://img.youtube.com/vi/${ytId}/mqdefault.jpg" style="width:100%;height:100%;object-fit:cover;display:block;" onerror="this.parentElement.querySelector('.gal-placeholder')&&(this.style.display='none')">${delBtn}<div class="gal-label">YouTube</div>`;
+      d.innerHTML=`<img src="https://img.youtube.com/vi/${ytId}/mqdefault.jpg" style="width:100%;height:100%;object-fit:cover;display:block;">${delBtn}<div class="gal-label">YouTube</div>`;
       d.onclick=()=>{insertAtCursor(`[xyoutube]${g.url}[/xyoutube]\n`);closeModal();};
-      d.querySelector('.gal-del').addEventListener('click',e=>{e.stopPropagation();gallery.splice(i,1);saveGallery();const g2=document.getElementById('galGrid');if(g2)renderGallery(g2);});
     } else if(g.type==='tt'){
       d.innerHTML=`<div class="gal-placeholder" style="background:#111;">🎶<span>${g.url}</span></div>${delBtn}<div class="gal-label">TikTok</div>`;
       d.onclick=()=>{insertAtCursor(`[xtiktok]${g.url}[/xtiktok]\n`);closeModal();};
-      d.querySelector('.gal-del').addEventListener('click',e=>{e.stopPropagation();gallery.splice(i,1);saveGallery();const g2=document.getElementById('galGrid');if(g2)renderGallery(g2);});
     } else {
       d.innerHTML=`<div class="gal-placeholder">📎<span>${shortName}</span></div>${delBtn}`;
       d.onclick=()=>{insertAtCursor(`[ximg]${g.url}[/ximg]\n`);closeModal();};
-      d.querySelector('.gal-del').addEventListener('click',e=>{e.stopPropagation();gallery.splice(i,1);saveGallery();const g2=document.getElementById('galGrid');if(g2)renderGallery(g2);});
     }
     d.title=g.url;
+    // Delete button handler
+    d.querySelector('.gal-del').addEventListener('click',e=>{
+      e.stopPropagation();
+      gallery.splice(i,1);saveGallery();
+      const g2=document.getElementById('galGrid');if(g2)renderGallery(g2);
+      if(currentPanel4==='gallery')renderPanel4Gallery();
+    });
     container.appendChild(d);
   });
 }
 
+function renderPanel4Gallery(){
+  const body=document.getElementById('p4Body');
+  if(!body)return;
+  const count=gallery.length;
+  let html=`<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:6px;">
+    <span style="font-size:11px;color:var(--text2);">點選圖片/影片即可插入文章使用。圖庫會儲存最新50項在此裝置，同裝置重新開啟仍可使用。</span>
+    <div style="display:flex;align-items:center;gap:8px;">
+      <span style="font-size:11px;font-family:'JetBrains Mono',monospace;color:var(--gold);background:var(--bg);border:1px solid var(--border);border-radius:4px;padding:2px 7px;">${count}/${MAX_GALLERY}</span>
+      <button class="btn-danger btn-sm" onclick="clearGallery()">🗑 清空</button>
+    </div>
+  </div>`;
+  if(!count){
+    html+='<div class="draft-empty">尚無已儲存的圖片/影片連結<br><span style="font-size:10px;opacity:.7;">上傳或插入圖片/影片後會自動記錄</span></div>';
+  } else {
+    html+='<div class="gal-list" id="galList">';
+    gallery.forEach((g,i)=>{
+      const shortName=g.url.split('/').pop().split('?')[0].slice(0,24)||g.url.slice(0,24);
+      let thumbHtml='';
+      if(g.type==='img'){
+        thumbHtml=`<img src="${g.url}" loading="lazy" onerror="this.style.display='none';this.parentElement.innerHTML='<div class=gal-thumb-ph>🖼</div>'">`;
+      } else if(g.type==='yt'){
+        const ytId=g.url.replace(/\s/g,'');
+        thumbHtml=`<img src="https://img.youtube.com/vi/${ytId}/mqdefault.jpg" loading="lazy" onerror="this.style.display='none';this.parentElement.innerHTML='<div class=gal-thumb-ph>▶️</div>'">`;
+      } else if(g.type==='vid'){
+        thumbHtml=`<div class="gal-thumb-ph">🎥</div>`;
+      } else if(g.type==='sendvid'){
+        thumbHtml=`<div class="gal-thumb-ph">📺</div>`;
+      } else if(g.type==='tt'){
+        thumbHtml=`<div class="gal-thumb-ph">🎶</div>`;
+      } else {
+        thumbHtml=`<div class="gal-thumb-ph">📎</div>`;
+      }
+      const typeLabel={'img':'圖片','vid':'影片MP4','yt':'YouTube','tt':'TikTok','sendvid':'Sendvid'}[g.type]||g.type;
+      html+=`<div class="gal-row" onclick="galInsert(${i})" title="${g.url}">
+        <div class="gal-row-thumb">${thumbHtml}</div>
+        <div class="gal-row-info">
+          <div class="gal-row-type">${typeLabel}</div>
+          <div class="gal-row-url">${shortName}</div>
+        </div>
+        <button class="gal-row-del" onclick="event.stopPropagation();galDelete(${i})" title="移除">✕</button>
+      </div>`;
+    });
+    html+='</div>';
+  }
+  body.innerHTML=html;
+}
+
+function galInsert(i){
+  const g=gallery[i];if(!g)return;
+  const bbMap={img:`[ximg]${g.url}[/ximg]\n`,vid:`[xmp4]${g.url}[/xmp4]\n`,yt:`[xyoutube]${g.url}[/xyoutube]\n`,tt:`[xtiktok]${g.url}[/xtiktok]\n`,sendvid:`[xsendvid]${g.url}[/xsendvid]\n`};
+  insertAtCursor(bbMap[g.type]||`[ximg]${g.url}[/ximg]\n`);
+  showToast('✅ 已插入！');
+}
+function galDelete(i){
+  gallery.splice(i,1);saveGallery();
+  if(currentPanel4==='gallery')renderPanel4Gallery();
+}
+
 /* ═══════════════════════════════════════════
-   SELECTION
+   DRAFT
+═══════════════════════════════════════════ */
+const MAX_DRAFTS=20;
+let drafts=[];
+try{const saved=localStorage.getItem('liujin_drafts');if(saved)drafts=JSON.parse(saved);}catch(e){}
+function saveDrafts(){try{localStorage.setItem('liujin_drafts',JSON.stringify(drafts.slice(0,MAX_DRAFTS)));}catch(e){}}
+function saveDraft(){
+  const content=editor.value.trim();
+  if(!content){showToast('⚠️ 編輯器是空的，無法儲存草稿');return;}
+  const now=new Date();
+  const timeStr=now.getFullYear()+'/'+(now.getMonth()+1).toString().padStart(2,'0')+'/'+now.getDate().toString().padStart(2,'0')+' '+now.getHours().toString().padStart(2,'0')+':'+now.getMinutes().toString().padStart(2,'0');
+  drafts.unshift({id:Date.now(),time:timeStr,content});
+  if(drafts.length>MAX_DRAFTS)drafts=drafts.slice(0,MAX_DRAFTS);
+  saveDrafts();
+  showToast('📝 草稿已儲存！');
+  if(currentPanel4==='draft')renderPanel4Draft();
+}
+function loadDraft(i){
+  const d=drafts[i];if(!d)return;
+  if(editor.value.trim()&&!confirm('載入草稿將覆蓋目前的編輯內容，確定嗎？'))return;
+  pushUndo(editor.value);
+  editor.value=d.content;
+  try{localStorage.setItem('liujin_editor_content',editor.value);}catch(e){}
+  updatePreview();updateStats();
+  showToast('✅ 草稿已載入！');
+}
+function deleteDraft(i){
+  if(!confirm('確定要刪除這筆草稿嗎？'))return;
+  drafts.splice(i,1);saveDrafts();
+  renderPanel4Draft();
+  showToast('🗑 草稿已刪除');
+}
+function clearDrafts(){
+  if(!drafts.length){showToast('草稿已是空的');return;}
+  if(!confirm('確定要清空所有草稿嗎？此操作無法復原。'))return;
+  drafts=[];saveDrafts();renderPanel4Draft();showToast('🗑 已清空所有草稿');
+}
+
+function renderPanel4Draft(){
+  const body=document.getElementById('p4Body');
+  if(!body)return;
+  let html=`<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:6px;">
+    <span style="font-size:11px;color:var(--text2);">最多儲存 ${MAX_DRAFTS} 筆草稿，同裝置重新開啟仍可使用。</span>
+    <button class="btn-danger btn-sm" onclick="clearDrafts()">🗑 清空草稿</button>
+  </div>`;
+  if(!drafts.length){
+    html+='<div class="draft-empty">尚無草稿<br><span style="font-size:10px;opacity:.7;">點擊上方「儲存草稿」按鈕可儲存目前編輯內容</span></div>';
+  } else {
+    html+='<div class="draft-list">';
+    drafts.forEach((d,i)=>{
+      const preview=d.content.replace(/\[[^\]]+\]/g,'').slice(0,80)+'…';
+      html+=`<div class="draft-item">
+        <div class="draft-item-time">${d.time}</div>
+        <div class="draft-item-preview">${escHtml(preview)}</div>
+        <div class="draft-item-actions">
+          <button class="btn btn-gold btn-sm" onclick="loadDraft(${i})">載入</button>
+          <button class="btn-danger btn-sm" onclick="deleteDraft(${i})">刪除</button>
+        </div>
+      </div>`;
+    });
+    html+='</div>';
+  }
+  body.innerHTML=html;
+}
+
+/* ═══════════════════════════════════════════
+   PANEL 4 TOGGLE (fixed sidebar, always right)
+═══════════════════════════════════════════ */
+let currentPanel4=null; // 'gallery' | 'draft' | null
+
+function _setFloatActive(type){
+  // Update both sets of float buttons
+  ['Split','Merged'].forEach(mode=>{
+    const g=document.getElementById('floatGallery'+mode);
+    const d=document.getElementById('floatDraft'+mode);
+    if(g)g.classList.toggle('active',type==='gallery');
+    if(d)d.classList.toggle('active',type==='draft');
+  });
+}
+
+function togglePanel4(type){
+  const p4=document.getElementById('panelFour');
+
+  if(currentPanel4===type){
+    closePanel4();
+    return;
+  }
+  currentPanel4=type;
+  p4.style.display='flex';
+  // Use rAF so display:flex takes effect before transition
+  requestAnimationFrame(()=>{ p4.classList.add('open'); });
+
+  _setFloatActive(type);
+
+  if(type==='gallery'){
+    document.getElementById('p4Title').textContent='🗂 圖庫';
+    renderPanel4Gallery();
+  } else {
+    document.getElementById('p4Title').textContent='📝 草稿';
+    renderPanel4Draft();
+  }
+}
+
+function closePanel4(){
+  const p4=document.getElementById('panelFour');
+  p4.classList.remove('open');
+  // Wait for transition then hide
+  p4.addEventListener('transitionend',()=>{ p4.style.display='none'; },{once:true});
+  currentPanel4=null;
+  _setFloatActive(null);
+}
+
+/* ═══════════════════════════════════════════
+   SELECTION  (fixed: no ghost selection from cut)
 ═══════════════════════════════════════════ */
 const editor=document.getElementById('editor');
+
+// auto-close 偵測（獨立監聽，不干擾 oninput）
+editor.addEventListener('input',e=>{
+  if(isComposing) return;
+  if(!e.inputType||e.inputType.startsWith('insert')){
+    const pos=editor.selectionStart;
+    const before=editor.value.slice(0,pos);
+    if(before.endsWith(']')) tryAutoClose();
+  }
+});
 let savedSel={start:0,end:0,text:''};
+// Track if the last change was a cut operation
+let lastWasCut=false;
+
+/* ═══════════════════════════════════════════
+   SMART BBCode AUTO-CLOSE
+   輸入 [b] 的瞬間自動補 [/b]，游標停在中間
+   用 keyup 偵測 ] 鍵，相容各種輸入方式
+═══════════════════════════════════════════ */
+const AUTO_CLOSE_TAGS=[
+  'b','i','u','strike','xgold','xcenter','xgban','xnote','xwarn',
+  'xblue','xgreen','xred','xinfo','xglass','xsmall','xquote','quote',
+  'xtag','xrate','xbtn','xspoiler','xcard','ximg','xmp4','xvmp4',
+  'xmp3','xsound','xsendvid','xmap','xmaplink','xyoutube','xsyoutube',
+  'xtiktok','hide','sell','fly','move','code','url',
+  'size','color','backcolor','align','xleft','xright',
+];
+
+function tryAutoClose(){
+  const pos=editor.selectionStart;
+  const before=editor.value.slice(0,pos);
+  // 游標前最後一個字元必須是 ]
+  if(!before.endsWith(']')) return;
+  // 抓開啟標籤，排除關閉標籤 [/xxx]
+  const tagMatch=before.match(/\[([a-zA-Z][a-zA-Z0-9]*)(?:=[^\]]+)?]$/);
+  if(!tagMatch) return;
+  const tagName=tagMatch[1].toLowerCase();
+  if(!AUTO_CLOSE_TAGS.includes(tagName)) return;
+  // 後面已有關閉標籤就不重複
+  const after=editor.value.slice(pos);
+  const closeTag=`[/${tagName}]`;
+  if(after.startsWith(closeTag)) return;
+  // 插入關閉標籤，游標停在兩者之間
+  pushUndo(editor.value);
+  editor.value=before+closeTag+after;
+  editor.selectionStart=editor.selectionEnd=pos;
+  try{localStorage.setItem('liujin_editor_content',editor.value);}catch(ex){}
+  schedulePreview();
+}
+
+// keyup 偵測兩種情況：
+// 1. 打 ] 結尾 → 直接觸發
+// 2. 游標後面緊接 ] → 打字母/數字時也觸發（處理先打[]再移進去打標籤名的情況）
+editor.addEventListener('keyup',e=>{
+  if(isComposing) return;
+  if(e.key===']'){
+    tryAutoClose();
+    return;
+  }
+  // 游標後方是 ] 且輸入的是字母/數字/= → 也嘗試觸發
+  if(/^[a-zA-Z0-9=/]$/.test(e.key)){
+    const pos=editor.selectionStart;
+    const after=editor.value.slice(pos);
+    if(after.startsWith(']')){
+      // 模擬游標在 ] 之後再檢查
+      const fakeBefore=editor.value.slice(0,pos)+']';
+      const tagMatch=fakeBefore.match(/\[([a-zA-Z][a-zA-Z0-9]*)(?:=[^\]]+)?]$/);
+      if(tagMatch){
+        const tagName=tagMatch[1].toLowerCase();
+        if(AUTO_CLOSE_TAGS.includes(tagName)){
+          const realAfter=editor.value.slice(pos+1); // 跳過那個 ]
+          const closeTag=`[/${tagName}]`;
+          if(!realAfter.startsWith(closeTag)){
+            pushUndo(editor.value);
+            const insertPos=pos+1; // ] 之後
+            editor.value=editor.value.slice(0,insertPos)+closeTag+editor.value.slice(insertPos);
+            editor.selectionStart=editor.selectionEnd=pos; // 游標留在 ] 前（標籤內容區）
+            try{localStorage.setItem('liujin_editor_content',editor.value);}catch(ex){}
+            schedulePreview();
+          }
+        }
+      }
+    }
+  }
+});
+
+editor.addEventListener('cut',()=>{
+  lastWasCut=true;
+  // After cut, clear saved selection since content is gone
+  setTimeout(()=>{
+    lastWasCut=false;
+    savedSel={start:editor.selectionStart,end:editor.selectionStart,text:''};
+    document.body.classList.remove('has-selection');
+    document.getElementById('selectionBar').classList.remove('visible');
+  },50);
+});
 
 function checkSel(){
-  const s=editor.selectionStart, e=editor.selectionEnd, has=s!==e;
+  const s=editor.selectionStart,e=editor.selectionEnd,has=s!==e;
   if(has){
     savedSel={start:s,end:e,text:editor.value.slice(s,e)};
   } else {
-    // Don't clear savedSel here - only clear via clearSavedSel()
-    // This prevents mobile button-tap from resetting selection before wrap fires
+    // Only clear if truly no selection and not from a cut
+    if(!lastWasCut){
+      savedSel={start:s,end:s,text:''};
+    }
   }
   document.body.classList.toggle('has-selection',has);
   document.getElementById('selectionBar').classList.toggle('visible',has);
+}
+
+// selectionchange for mobile
+document.addEventListener('selectionchange',()=>{
+  if(document.activeElement===editor){
+    const s=editor.selectionStart,e=editor.selectionEnd;
+    if(s!==e){
+      savedSel={start:s,end:e,text:editor.value.slice(s,e)};
+      document.body.classList.add('has-selection');
+      document.getElementById('selectionBar').classList.add('visible');
+    } else {
+      // Only clear selection state if we're sure there's none
+      // Don't clear if a toolbar button is about to be clicked
+    }
+  }
+});
+
+function getLiveSel(){
+  const s=editor.selectionStart,e=editor.selectionEnd;
+  if(s!==e){
+    const liveText=editor.value.slice(s,e);
+    savedSel={start:s,end:e,text:liveText};
+    return {start:s,end:e,text:liveText};
+  }
+  // On mobile, after button tap the editor may lose focus
+  // Use savedSel only if it's non-empty AND not from a cut
+  if(savedSel.text&&!lastWasCut){
+    return savedSel;
+  }
+  return {start:s,end:s,text:''};
 }
 
 function clearSavedSel(){
@@ -567,94 +1006,42 @@ function clearSavedSel(){
   document.getElementById('selectionBar').classList.remove('visible');
 }
 
-// selectionchange fires on mobile when user selects text via system menu
-document.addEventListener('selectionchange',()=>{
-  if(document.activeElement===editor){
-    const s=editor.selectionStart, e=editor.selectionEnd;
-    if(s!==e){
-      savedSel={start:s,end:e,text:editor.value.slice(s,e)};
-      document.body.classList.add('has-selection');
-      document.getElementById('selectionBar').classList.add('visible');
-    }
-  }
-});
-
-document.addEventListener('mousedown',e=>{
-  if(e.target!==editor && !editor.contains(e.target)){
-    // Delay check: if user tapped a toolbar button, selection is still valid
-    // Only clear if selection is truly gone after a longer delay
-    setTimeout(()=>{
-      if(editor.selectionStart===editor.selectionEnd && savedSel.text){
-        // Check again - mobile may restore selection
-        const stillSelected=editor.selectionStart!==editor.selectionEnd;
-        if(!stillSelected){
-          // Check if we're in the middle of a wrap operation (give it 300ms)
-          setTimeout(()=>{
-            if(editor.selectionStart===editor.selectionEnd){
-              clearSavedSel();
-            }
-          },300);
-        }
-      }
-    },50);
-  }
-});
-
-// Re-read live selection right before wrapping (fixes mobile select-all bug)
-function getLiveSel(){
-  const s=editor.selectionStart, e=editor.selectionEnd;
-  // If editor has an active selection, use it and update savedSel
-  if(s!==e){
-    const liveText=editor.value.slice(s,e);
-    // Only update savedSel if live selection is different from saved
-    if(liveText!==savedSel.text){
-      savedSel={start:s,end:e,text:liveText};
-    }
-    return {start:s,end:e,text:liveText};
-  }
-  // On mobile, tapping a button blurs editor and resets selection to 0
-  // So we fall back to savedSel which was captured by selectionchange
-  if(savedSel.text){
-    return savedSel;
-  }
-  return {start:s,end:e,text:''};
-}
-
 /* ═══════════════════════════════════════════
    INSERT / WRAP
 ═══════════════════════════════════════════ */
-function insertAtCursor(txt){pushUndo(editor.value);const s=editor.selectionStart,e=editor.selectionEnd;editor.value=editor.value.slice(0,s)+txt+editor.value.slice(e);editor.selectionStart=editor.selectionEnd=s+txt.length;editor.focus();updatePreview();updateStats();}
+function insertAtCursor(txt){
+  pushUndo(editor.value);
+  const s=editor.selectionStart,e=editor.selectionEnd;
+  editor.value=editor.value.slice(0,s)+txt+editor.value.slice(e);
+  editor.selectionStart=editor.selectionEnd=s+txt.length;
+  editor.focus();
+  try{localStorage.setItem('liujin_editor_content',editor.value);}catch(ex){}
+  updatePreview();updateStats();
+}
 function wrapSel(tag,attr){
-  // Always use live selection at moment of click
   const live=getLiveSel();
-  if(!live.text) return;
+  if(!live.text)return;
   const{start,end,text}=live;
   const open=attr?`[${tag}=${attr}]`:`[${tag}]`;
   const close=`[/${tag}]`;
   pushUndo(editor.value);
   const wrapped=open+text+close;
   editor.value=editor.value.slice(0,start)+wrapped+editor.value.slice(end);
-  // Keep selection on the wrapped content so user can chain more wraps
   editor.selectionStart=start;
   editor.selectionEnd=start+wrapped.length;
   editor.focus();
-  // Clear savedSel after wrapping to prevent re-wrapping on next tap
+  // Clear saved sel after wrap so it doesn't re-wrap on next tap
   savedSel={start:start+wrapped.length,end:start+wrapped.length,text:''};
   document.body.classList.remove('has-selection');
   document.getElementById('selectionBar').classList.remove('visible');
+  try{localStorage.setItem('liujin_editor_content',editor.value);}catch(ex){}
   updatePreview();updateStats();
 }
 const directWrap=['xgold','xcenter','xgban','xnote','xwarn','xblue','xgreen','xred','xinfo','xglass','xsmall','quote','xquote','xtag','b','i','u','strike'];
 function wrapOrModal(tag){
   const live=getLiveSel();
-  if(live.text && directWrap.includes(tag)){
-    wrapSel(tag);
-  } else if(live.text && !directWrap.includes(tag)){
-    // Has selection but needs modal - prefill modal with selected text
-    openModal(tag);
-  } else {
-    openModal(tag);
-  }
+  if(live.text&&directWrap.includes(tag)){wrapSel(tag);}
+  else{openModal(tag);}
 }
 function wrapFmt(tag,attr){
   const live=getLiveSel();
@@ -663,16 +1050,28 @@ function wrapFmt(tag,attr){
   } else {
     const cursor=`[${tag}${attr?'='+attr:''}][/${tag}]`;
     insertAtCursor(cursor);
-    // Move cursor inside the tags
     const pos=editor.selectionStart-(tag.length+3+(attr?attr.length+1:0));
     editor.selectionStart=editor.selectionEnd=pos;
   }
 }
 
 /* ═══════════════════════════════════════════
-   STATS
+   STATS — real text chars (CJK only), images, videos
 ═══════════════════════════════════════════ */
-function updateStats(){const v=editor.value;document.getElementById('charCount').textContent=v.length+t('charUnit');const zh=(v.match(/[\u4e00-\u9fff\u3400-\u4dbf]/g)||[]).length;document.getElementById('zhCount').textContent=t('zhUnit')+zh+'字';}
+function updateStats(){
+  const v=editor.value;
+  // Strip all BBCode tags to get real text
+  const stripped=v.replace(/\[[^\]]*\]/g,'');
+  // Count CJK chars only
+  const cjk=(stripped.match(/[\u4e00-\u9fff\u3400-\u4dbf\uf900-\ufaff]/g)||[]).length;
+  // Count images
+  const imgCount=(v.match(/\[ximg\]|\[img\]|\[url=[^\]]+\]\[img\]/g)||[]).length;
+  // Count videos (mp4, youtube, tiktok, sendvid, vmp4)
+  const vidCount=(v.match(/\[xmp4\]|\[xvmp4\]|\[xyoutube\]|\[xsyoutube\]|\[xtiktok\]|\[xsendvid\]/g)||[]).length;
+  document.getElementById('charCount').textContent=`文字：${cjk}字`;
+  document.getElementById('imgCount').textContent=`圖片：${imgCount}`;
+  document.getElementById('vidCount').textContent=`影片：${vidCount}`;
+}
 
 /* ═══════════════════════════════════════════
    FILE OPS
@@ -681,85 +1080,77 @@ async function saveFile(){
   const content_=editor.value;
   if(window.showSaveFilePicker){
     try{
-      const fh=await window.showSaveFilePicker({
-        suggestedName:'流金.txt',
-        types:[{description:'文字檔',accept:{'text/plain':['.txt']}}]
-      });
-      const w=await fh.createWritable();
-      await w.write(content_);
-      await w.close();
-      showToast(t('saved'));
-      return;
+      const fh=await window.showSaveFilePicker({suggestedName:'流金.txt',types:[{description:'文字檔',accept:{'text/plain':['.txt']}}]});
+      const w=await fh.createWritable();await w.write(content_);await w.close();
+      showToast(t('saved'));return;
     }catch(e){if(e.name==='AbortError')return;}
   }
-  // fallback
   const blob=new Blob([content_],{type:'text/plain;charset=utf-8'});
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='流金.txt';a.click();
   showToast(t('saved'));
 }
 function fallbackCopy(){
-  try{
-    editor.select();
-    editor.setSelectionRange(0,99999); // for mobile
-    document.execCommand('copy');
-    showToast(t('copied'));
-  }catch(e){showToast('❌ 複製失敗，請手動複製');}
+  try{editor.focus();editor.select();editor.setSelectionRange(0,99999);document.execCommand('copy');showToast(t('copied'));}
+  catch(e){showToast('❌ 複製失敗，請手動複製');}
 }
 function copyCode(){
   if(!editor.value.trim())return;
   if(navigator.clipboard&&window.isSecureContext){
-    navigator.clipboard.writeText(editor.value)
-      .then(()=>showToast(t('copied')))
-      .catch(()=>fallbackCopy());
-  }else{
-    fallbackCopy();
-  }
+    navigator.clipboard.writeText(editor.value).then(()=>showToast(t('copied'))).catch(()=>fallbackCopy());
+  }else{fallbackCopy();}
 }
+
 /* ═══════════════════════════════════════════
    SPLIT / MERGE VIEW
 ═══════════════════════════════════════════ */
-let isMerged = false;
-
+let isMerged=false;
 function toggleSplitMerge(){
-  isMerged = !isMerged;
-  const panelRight = document.querySelector('.panel-right');
-  const main = document.querySelector('.main');
-  const splitBtn = document.getElementById('splitMergeBtn');
-  const previewBtn = document.getElementById('previewToggleBtn');
+  isMerged=!isMerged;
+  const panelRight=document.getElementById('panelRight');
+  const main=document.getElementById('mainGrid');
+  const splitBtn=document.getElementById('splitMergeBtn');
+  const previewBtn=document.getElementById('previewToggleBtn');
+  const splitFloat=document.getElementById('floatBtnsSplit');
+  const mergedFloat=document.getElementById('floatBtnsMerged');
+  const isMobile=window.innerWidth<=768;
 
   if(isMerged){
-    // Merged: hide right panel, editor takes full width
-    panelRight.style.display = 'none';
-    main.style.gridTemplateColumns = '240px 1fr';
-    splitBtn.textContent = '分欄';
-    previewBtn.style.display = '';
-    // Mobile: single column
-    if(window.innerWidth <= 768){
-      main.style.gridTemplateColumns = '1fr';
-    }
+    // 合併模式：隱藏預覽欄
+    panelRight.style.display='none';
+    if(splitFloat)splitFloat.style.display='none';
+    if(mergedFloat)mergedFloat.style.display='flex';
+    if(!isMobile) main.style.gridTemplateColumns='240px 1fr';
+    else main.style.gridTemplateColumns='1fr';
+    splitBtn.textContent='分欄';
+    previewBtn.style.display='';
   } else {
-    // Split: show right panel again
-    panelRight.style.display = '';
-    main.style.gridTemplateColumns = '240px 1fr 1fr';
-    splitBtn.textContent = '合併';
-    previewBtn.style.display = 'none';
-    // Hide overlay preview if open
-    const overlay = document.getElementById('previewOverlay');
-    if(overlay) overlay.style.display = 'none';
-    if(window.innerWidth <= 768){
-      main.style.gridTemplateColumns = '1fr';
+    // 分欄模式：顯示預覽欄
+    // 手機必須明確 display:flex，因為 CSS media 有 display:none
+    panelRight.style.display='flex';
+    panelRight.style.flexDirection='column';
+    panelRight.style.minHeight=isMobile?'40vh':'';
+    panelRight.style.borderTop=isMobile?'1px solid var(--border)':'';
+    if(splitFloat)splitFloat.style.display='flex';
+    if(mergedFloat)mergedFloat.style.display='none';
+    if(!isMobile) main.style.gridTemplateColumns='240px 1fr 1fr';
+    else {
+      // 手機分欄：編輯器與預覽上下各半
+      main.style.gridTemplateColumns='1fr';
     }
+    splitBtn.textContent='合併';
+    previewBtn.style.display='none';
+    const overlay=document.getElementById('previewOverlay');
+    if(overlay)overlay.style.display='none';
   }
 }
 
 function showMergedPreview(){
-  // Show a fullscreen overlay with the preview content
-  let overlay = document.getElementById('previewOverlay');
+  let overlay=document.getElementById('previewOverlay');
   if(!overlay){
-    overlay = document.createElement('div');
-    overlay.id = 'previewOverlay';
-    overlay.style.cssText = 'position:fixed;inset:0;background:#fff;z-index:300;display:flex;flex-direction:column;overflow:hidden;';
-    overlay.innerHTML = `
+    overlay=document.createElement('div');
+    overlay.id='previewOverlay';
+    overlay.style.cssText='position:fixed;inset:0;background:#fff;z-index:300;display:flex;flex-direction:column;overflow:hidden;';
+    overlay.innerHTML=`
       <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 16px;background:#f5f5f0;border-bottom:1px solid #ddd;flex-shrink:0;">
         <span style="font-size:13px;font-weight:600;color:#666;">👁 論壇預覽</span>
         <button onclick="document.getElementById('previewOverlay').style.display='none'" style="background:#e0e0e0;border:none;border-radius:6px;padding:5px 14px;font-size:12px;cursor:pointer;font-family:inherit;">✕ 關閉</button>
@@ -768,42 +1159,59 @@ function showMergedPreview(){
     `;
     document.body.appendChild(overlay);
   }
-  // Copy current preview content
-  document.getElementById('previewOverlayBody').innerHTML = document.getElementById('preview').innerHTML;
-  overlay.style.display = 'flex';
+  document.getElementById('previewOverlayBody').innerHTML=document.getElementById('preview').innerHTML;
+  overlay.style.display='flex';
 }
 
-// Init: on mobile, start in merged mode automatically
 window.addEventListener('DOMContentLoaded',()=>{
-  if(window.innerWidth <= 768){
-    // auto-merge on mobile for better UX
-    setTimeout(toggleSplitMerge, 50);
+  const mergedFloat=document.getElementById('floatBtnsMerged');
+  if(mergedFloat)mergedFloat.style.display='none';
+  if(window.innerWidth<=768){
+    // 手機：預先隱藏預覽欄，再切換到合併模式
+    const panelRight=document.getElementById('panelRight');
+    if(panelRight)panelRight.style.display='none';
+    setTimeout(()=>{
+      if(!isMerged) toggleSplitMerge();
+    },50);
   }
 });
 
+/* ═══════════════════════════════════════════
+   STRIP BBCODE
+═══════════════════════════════════════════ */
 function stripBBCode(){
-  if(!editor.value.trim()) return;
+  if(!editor.value.trim())return;
   pushUndo(editor.value);
-  const knownTags=['b','i','u','strike','size','color','backcolor','align','hr','code','url','img','ximg','xmp4','xvmp4','xmp3','xsound','xyoutube','xsyoutube','xtiktok','xsendvid','xmap','xmaplink','xhr','xgold','xcenter','xgban','xnote','xwarn','xblue','xgreen','xred','xinfo','xglass','xsmall','xquote','quote','xtag','xrate','xbtn','xspoiler','xcard','xleft','xright','xthead','xtr','hide','fly','move'];
-  const pat=knownTags.join('|');
-  editor.value=editor.value.replace(new RegExp(`\\[\\/?(?:${pat})(?:=[^\\]]+)?\\]`,'gi'),'');
+  editor.value=editor.value.replace(/\[[^\]]*\]/g,'');
+  try{localStorage.setItem('liujin_editor_content',editor.value);}catch(e){}
   updatePreview();updateStats();showToast('✅ 已清除所有 BBCode 語法');
 }
 function stripBBCodeSel(){
   const live=getLiveSel();
   if(!live.text){showToast('⚠️ 請先反白要清除語法的文字');return;}
   pushUndo(editor.value);
-  const knownTags=['b','i','u','strike','size','color','backcolor','align','hr','code','url','img','ximg','xmp4','xvmp4','xmp3','xsound','xyoutube','xsyoutube','xtiktok','xsendvid','xmap','xmaplink','xhr','xgold','xcenter','xgban','xnote','xwarn','xblue','xgreen','xred','xinfo','xglass','xsmall','xquote','quote','xtag','xrate','xbtn','xspoiler','xcard','xleft','xright','xthead','xtr','hide','fly','move'];
-  const pat=knownTags.join('|');
-  const cleaned=live.text.replace(new RegExp(`\\[\\/?(?:${pat})(?:=[^\\]]+)?\\]`,'gi'),'');
+  const cleaned=live.text.replace(/\[[^\]]*\]/g,'');
   editor.value=editor.value.slice(0,live.start)+cleaned+editor.value.slice(live.end);
   editor.selectionStart=live.start;editor.selectionEnd=live.start+cleaned.length;
   editor.focus();savedSel={start:live.start,end:live.start+cleaned.length,text:cleaned};
+  try{localStorage.setItem('liujin_editor_content',editor.value);}catch(e){}
   updatePreview();updateStats();showToast('✅ 已清除選取範圍內的 BBCode 語法');
 }
 
-function clearEditor(){if(editor.value&&confirm(t('confirmClear'))){pushUndo(editor.value);editor.value='';
-    try{localStorage.removeItem('liujin_editor_content');}catch(e){}updatePreview();updateStats();savedSel={start:0,end:0,text:''}; document.body.classList.remove('has-selection');document.getElementById('selectionBar').classList.remove('visible');}}
+/* clearEditor — mobile fix: use confirm() directly */
+function clearEditor(){
+  if(!editor.value)return;
+  if(!confirm(t('confirmClear')))return;
+  pushUndo(editor.value);
+  editor.value='';
+  try{localStorage.removeItem('liujin_editor_content');}catch(e){}
+  updatePreview();updateStats();
+  savedSel={start:0,end:0,text:''};
+  document.body.classList.remove('has-selection');
+  document.getElementById('selectionBar').classList.remove('visible');
+  showToast(t('cleared'));
+}
+
 function showToast(msg){const t_=document.getElementById('toast');t_.textContent=msg;t_.classList.add('show');setTimeout(()=>t_.classList.remove('show'),2500);}
 
 /* ═══════════════════════════════════════════
@@ -811,45 +1219,15 @@ function showToast(msg){const t_=document.getElementById('toast');t_.textContent
 ═══════════════════════════════════════════ */
 function extractYTId(input){input=input.trim();if(/^[a-zA-Z0-9_-]{11}$/.test(input))return input;try{const u=new URL(input);if(u.hostname==='youtu.be')return u.pathname.slice(1).split('?')[0];if(u.searchParams.get('v'))return u.searchParams.get('v');const sm=u.pathname.match(/\/shorts\/([a-zA-Z0-9_-]{11})/);if(sm)return sm[1];const em=u.pathname.match(/\/embed\/([a-zA-Z0-9_-]{11})/);if(em)return em[1];}catch(e){}const m=input.match(/(?:v=|\/embed\/|\/shorts\/|youtu\.be\/)([a-zA-Z0-9_-]{11})/);return m?m[1]:null;}
 function extractTTId(input){input=input.trim();if(/^\d{15,20}$/.test(input))return input;try{const u=new URL(input);const m=u.pathname.match(/\/video\/(\d+)/);if(m)return m[1];}catch(e){}const m=input.match(/\/video\/(\d+)/);return m?m[1]:null;}
+function extractSendvidId(input){input=input.trim();if(/^[a-z0-9]{4,12}$/.test(input))return input;try{const u=new URL(input);const m=u.pathname.match(/\/([a-z0-9]{4,12})$/i);if(m)return m[1];}catch(e){}const m=input.match(/sendvid\.com\/([a-z0-9]{4,12})/i);return m?m[1]:null;}
+
+function prevSendvid(){const v=document.getElementById('f1').value;const id=extractSendvidId(v);const prev=document.getElementById('svPrev');const err=document.getElementById('svErr');const embed=document.getElementById('svEmbed');if(!v.trim()){prev.textContent='';err.textContent='';embed.innerHTML='';return;}if(id){prev.textContent=`✅ ID：${id}  →  [xsendvid]${id}[/xsendvid]`;err.textContent='';embed.innerHTML=`<iframe src="https://sendvid.com/embed/${id}" style="width:100%;aspect-ratio:16/9;border-radius:6px;border:none;" allowfullscreen loading="lazy"></iframe>`;}else{prev.textContent='';err.textContent='❌ 無法解析 Sendvid ID，請確認網址格式';embed.innerHTML='';}}
 
 /* ═══════════════════════════════════════════
-   SENDVID
-═══════════════════════════════════════════ */
-function extractSendvidId(input){
-  input=input.trim();
-  // already an ID: alphanumeric 6-12 chars
-  if(/^[a-z0-9]{4,12}$/.test(input))return input;
-  try{const u=new URL(input);const m=u.pathname.match(/\/([a-z0-9]{4,12})$/i);if(m)return m[1];}catch(e){}
-  const m=input.match(/sendvid\.com\/([a-z0-9]{4,12})/i);
-  return m?m[1]:null;
-}
-function prevSendvid(){
-  const v=document.getElementById('f1').value;
-  const id=extractSendvidId(v);
-  const prev=document.getElementById('svPrev');
-  const err=document.getElementById('svErr');
-  const embed=document.getElementById('svEmbed');
-  if(!v.trim()){prev.textContent='';err.textContent='';embed.innerHTML='';return;}
-  if(id){
-    prev.textContent=`✅ ID：${id}  →  [xsendvid]${id}[/xsendvid]`;
-    err.textContent='';
-    embed.innerHTML=`<iframe src="https://sendvid.com/embed/${id}" style="width:100%;aspect-ratio:16/9;border-radius:6px;border:none;" allowfullscreen loading="lazy"></iframe>`;
-  }else{
-    prev.textContent='';
-    err.textContent='❌ 無法解析 Sendvid ID，請確認網址格式';
-    embed.innerHTML='';
-  }
-}
-
-/* ═══════════════════════════════════════════
-   SIZE MODAL
+   SIZE / COLOR MODAL HELPERS
 ═══════════════════════════════════════════ */
 function openSizeModal(){openModal('size');}
 const SIZES=[1,2,3,4,5,6,7];
-
-/* ═══════════════════════════════════════════
-   COLOR MODAL
-═══════════════════════════════════════════ */
 let colorModalTag='color';
 function openColorModal(type){colorModalTag=type;openModal('colorpicker');}
 const COLORS=['#000000','#ffffff','#ef4444','#f97316','#eab308','#22c55e','#3b82f6','#8b5cf6','#ec4899','#f0b429','#06b6d4','#84cc16'];
@@ -861,7 +1239,6 @@ function buildLeftPanel(){
   const panel=document.getElementById('leftPanel');
   panel.innerHTML='';
   const sections=[
-
     {key:'layout',title:lang==='zh'?'📐 基本排版':'📐 Layout',tags:[
       {tag:'xhr',icon:'➖',label:lang==='zh'?'金色分隔線':'Gold Divider',code:'xhr',simple:true},
       {tag:'xgold',icon:'🏷',label:lang==='zh'?'章節標題':'Section Title',code:'xgold',wrap:true},
@@ -892,9 +1269,9 @@ function buildLeftPanel(){
     ]},
     {key:'media',title:lang==='zh'?'🎬 多媒體':'🎬 Media',tags:[
       {tag:'xyoutube',icon:'▶️',label:'YouTube',code:'xyoutube',modal:true},
-      {tag:'xsyoutube',icon:'📱',label:lang==='zh'?'YouTube直立影片':'YouTube Vertical',code:'xsyoutube',modal:true},
+      {tag:'xsyoutube',icon:'📱',label:lang==='zh'?'YouTube直立':'YouTube Vert.',code:'xsyoutube',modal:true},
       {tag:'xmp4',icon:'🎥',label:'MP4 影片',code:'xmp4',modal:true},
-      {tag:'xvmp4',icon:'📹',label:lang==='zh'?'直立影片 MP4':'Vertical MP4',code:'xvmp4',modal:true},
+      {tag:'xvmp4',icon:'📹',label:lang==='zh'?'直立 MP4':'Vert. MP4',code:'xvmp4',modal:true},
       {tag:'xtiktok',icon:'🎶',label:'TikTok',code:'xtiktok',modal:true},
       {tag:'xmp3',icon:'🎵',label:'MP3 音樂',code:'xmp3',modal:true},
       {tag:'xsound',icon:'🔊',label:'SoundCloud',code:'xsound',modal:true},
@@ -905,8 +1282,8 @@ function buildLeftPanel(){
     {key:'image',title:lang==='zh'?'🖼 圖片':'🖼 Images',tags:[
       {tag:'ximg',icon:'🖼',label:lang==='zh'?'插入圖片連結':'Insert Image URL',code:'ximg',modal:true},
       {tag:'postimages',icon:'📤',label:lang==='zh'?'Postimages 上傳':'Postimages Upload',code:'半自動',modal:true,gold:true},
-      {tag:'catbox',icon:'🐱',label:lang==='zh'?'貓盒 Catbox':'Catbox',code:'半自動',modal:true,gold:true},
-      {tag:'gallery',icon:'🗂',label:lang==='zh'?'圖庫':'Gallery',code:'gallery',modal:true},
+      {tag:'catbox',icon:'🐱',label:lang==='zh'?'Catbox 自動上傳':'Catbox Upload',code:'自動',modal:true,gold:true},
+      {tag:'gallery',icon:'🗂',label:lang==='zh'?'圖庫':'Gallery',code:'gallery',modal:true,gold:false},
     ]},
     {key:'dialog',title:lang==='zh'?'💬 對話':'💬 Dialog',tags:[
       {tag:'dialog',icon:'🗨',label:lang==='zh'?'對話泡泡':'Chat Bubbles',code:'xleft/xright',modal:true},
@@ -952,14 +1329,13 @@ function openModal(tag){
   const overlay=document.getElementById('modalOverlay');
   const hasSel=!!savedSel.text;
   const selVal=hasSel?savedSel.text:'';
-
   const titles={
     xgold:'🏷 章節標題',xcenter:'⬛ 置中標題',xgban:'🟨 金色橫幅',
     xnote:'📌 重點框',xwarn:'⚠️ 警告框',xblue:'🔵 技術提示',xgreen:'✅ 成功訊息',xred:'🚫 禁止事項',xinfo:'ℹ️ 蘋果藍資訊框',xglass:'🪟 蘋果灰玻璃感',
     xcard:'🃏 卡片',quote:'「」引用框 type2（框格）',xquote:'｜引用框 type1（斜體）',
     xtag:'🔖 標籤',xrate:'⭐ 評分',xbtn:'🔘 按鈕連結',
     xyoutube:'▶️ YouTube 長影片',xsyoutube:'📱 YouTube直立影片',xmp4:'🎥 MP4 影片',xvmp4:'📹 直立 MP4',xmp3:'🎵 MP3 音樂',xtiktok:'🎶 TikTok',xsound:'🔊 SoundCloud',xsendvid:'📺 Sendvid 影片',xmap:'🗺 地圖座標（xmap）',xmaplink:'📍 地點名稱（xmaplink）',
-    xspoiler:'🔽 劇透文字（xspoiler）',xsmall:'🔡 小字補充（xsmall）',ximg:'🖼 插入圖片',postimages:'📤 Postimages 半自動上傳',catbox:'🐱 貓盒 Catbox 上傳',gallery:'🗂 圖庫',
+    xspoiler:'🔽 劇透文字（xspoiler）',xsmall:'🔡 小字補充（xsmall）',ximg:'🖼 插入圖片',postimages:'📤 Postimages 半自動上傳',catbox:'🐱 貓盒 Catbox 上傳',
     dialog:'🗨 對話泡泡',xtable:'📋 表格',hide:'🔐 加密內容',sell:'💰 販售（sell）',
     size:'A↕ 文字大小',colorpicker:'🎨 顏色選擇',
   };
@@ -978,8 +1354,7 @@ function openModal(tag){
     case 'xsmall':
       html=`<label>小字補充內容</label><input id="f1" value="${esc(selVal)}" placeholder="例：資料來源：會員自行整理，僅供參考。">`;break;
     case 'xcard':
-      html=`<label>卡片標題</label><input id="f1" placeholder="例：推薦作品"><label>卡片內容</label><textarea id="f2">${esc(selVal)}</textarea>`
-;break;
+      html=`<label>卡片標題</label><input id="f1" placeholder="例：推薦作品"><label>卡片內容</label><textarea id="f2">${esc(selVal)}</textarea>`;break;
     case 'quote':case 'xquote':
       html=`<label>引用內容</label><textarea id="f1">${esc(selVal)}</textarea>`;break;
     case 'xtag':
@@ -1002,7 +1377,7 @@ function openModal(tag){
     case 'xmp3':
       html=`<label>音檔連結網址（.mp3）</label><input id="f1" placeholder="https://...mp3">`;break;
     case 'xsound':
-      html=`<label>SoundCloud 連結</label><input id="f1" placeholder="https://soundcloud.com/...">`; break;
+      html=`<label>SoundCloud 連結</label><input id="f1" placeholder="https://soundcloud.com/...">`;break;
     case 'xsendvid':
       html=`<div style="margin-bottom:8px;"><button class="postimg-open-btn" onclick="window.open('https://sendvid.com/','_blank')">🔗 前往 Sendvid 上傳</button></div>
       <label>貼上 Sendvid 網址或影片 ID</label>
@@ -1032,25 +1407,68 @@ function openModal(tag){
       document.getElementById('modalOK').textContent='插入';
       break;
     case 'catbox':
-      html=`<div class="postimg-steps">
-        <div class="postimg-step"><div class="step-num">1</div><div class="step-body"><div class="step-title">開啟 Catbox 上傳</div><div class="step-desc">點下方按鈕前往 Catbox 網站，上傳你的圖/影片。</div><button class="postimg-open-btn" onclick="window.open('https://catbox.moe/','_blank')">🐱 前往 Catbox 網站</button></div></div>
-        <div class="postimg-step"><div class="step-num">2</div><div class="step-body"><div class="step-title">選擇類型並貼上連結</div>
-        <div style="display:flex;gap:8px;margin:8px 0;">
-          <button id="cbTypeImg" class="btn btn-gold" style="flex:1;font-size:12px;" onclick="setCatboxType('img')">🖼 圖片</button>
-          <button id="cbTypeVid" class="btn btn-ghost" style="flex:1;font-size:12px;" onclick="setCatboxType('vid')">🎥 影片</button>
+      html=`
+      <!-- Tab 切換 -->
+      <div style="display:flex;gap:0;margin-bottom:14px;border-radius:8px;overflow:hidden;border:1px solid var(--border);">
+        <button id="cbTabAuto" onclick="cbSwitchTab('auto')"
+          style="flex:1;padding:7px 0;border:none;cursor:pointer;font-family:inherit;font-size:12px;font-weight:700;background:var(--gold);color:#000;transition:all .15s;">
+          🚀 自動上傳
+        </button>
+        <button id="cbTabManual" onclick="cbSwitchTab('manual')"
+          style="flex:1;padding:7px 0;border:none;cursor:pointer;font-family:inherit;font-size:12px;font-weight:600;background:var(--surface2);color:var(--text2);transition:all .15s;">
+          ✏️ 手動輸入
+        </button>
+      </div>
+
+      <!-- ── 自動上傳頁 ── -->
+      <div id="cbPaneAuto">
+        <div style="font-size:11px;color:var(--text2);background:rgba(240,180,41,.07);border:1px solid rgba(240,180,41,.2);border-radius:7px;padding:8px 12px;margin-bottom:12px;line-height:1.6;">
+          🐱 直接拖放或選擇檔案，自動上傳到 Catbox 並取得連結。支援圖片（jpg/png/gif/webp）與影片（mp4/mov）。單檔最大 200MB，永久儲存。
         </div>
-        <label>貼上 Catbox 連結</label>
-        <input id="cbUrl" placeholder="https://files.catbox.moe/xxxxxx.jpg" oninput="prevCatbox()">
-        <div id="cbErr" style="font-size:11px;color:#ef4444;min-height:12px;margin-top:4px;"></div>
-        <div id="cbPrev" style="margin-top:6px;"></div>
-        </div></div></div>`;
-      document.getElementById('modalOK').textContent='插入';
-      setTimeout(()=>{ setCatboxType('img'); },30);
+        <div id="cbDropZone"
+          ondragover="event.preventDefault();this.classList.add('cb-drag-over')"
+          ondragleave="this.classList.remove('cb-drag-over')"
+          ondrop="cbHandleDrop(event)"
+          onclick="document.getElementById('cbFileInput').click()"
+          style="border:2px dashed var(--border);border-radius:10px;padding:24px 16px;text-align:center;cursor:pointer;transition:all .2s;margin-bottom:12px;">
+          <div style="font-size:28px;margin-bottom:6px;">📂</div>
+          <div style="font-size:13px;color:var(--text);font-weight:600;">點擊選擇或拖放檔案到這裡</div>
+          <div style="font-size:11px;color:var(--text2);margin-top:4px;">jpg · png · gif · webp · mp4 · mov　最大 200MB　可多選</div>
+        </div>
+        <input type="file" id="cbFileInput" accept="image/*,video/mp4,video/quicktime,.gif" multiple style="display:none" onchange="cbHandleFiles(this.files)">
+        <div id="cbQueue" style="display:flex;flex-direction:column;gap:6px;max-height:240px;overflow-y:auto;"></div>
+        <div id="cbInsertAll" style="display:none;margin-top:10px;">
+          <button class="btn btn-gold" style="width:100%;font-size:12px;" onclick="cbInsertAllDone()">⬇️ 全部插入編輯器</button>
+        </div>
+      </div>
+
+      <!-- ── 手動輸入頁 ── -->
+      <div id="cbPaneManual" style="display:none;">
+        <div style="font-size:11px;color:var(--text2);background:rgba(59,130,246,.07);border:1px solid rgba(59,130,246,.2);border-radius:7px;padding:8px 12px;margin-bottom:12px;line-height:1.6;">
+          ✏️ 已有 Catbox 連結？直接貼上即可。也可前往 <button class="postimg-open-btn" style="display:inline;padding:1px 8px;font-size:11px;" onclick="window.open('https://catbox.moe/','_blank')">catbox.moe</button> 自行上傳後取得連結再貼入。
+        </div>
+        <div style="display:flex;gap:8px;margin-bottom:10px;">
+          <button id="cbManTypeImg" class="btn btn-gold" style="flex:1;font-size:12px;" onclick="cbSetManType('img')">🖼 圖片</button>
+          <button id="cbManTypeVid" class="btn btn-ghost" style="flex:1;font-size:12px;" onclick="cbSetManType('vid')">🎥 影片</button>
+        </div>
+        <label style="font-size:11px;color:var(--text2);display:block;margin-bottom:4px;">貼上 Catbox 連結</label>
+        <input id="cbManUrl" placeholder="https://files.catbox.moe/xxxxxx.jpg" oninput="cbPrevManual()"
+          style="width:100%;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:7px 11px;color:var(--text);font-family:inherit;font-size:12px;outline:none;">
+        <div id="cbManErr" style="font-size:11px;color:#ef4444;min-height:14px;margin-top:4px;"></div>
+        <div id="cbManPrev" style="margin-top:8px;"></div>
+        <div style="margin-top:12px;">
+          <button class="btn btn-gold" style="width:100%;font-size:12px;" onclick="cbInsertManual()">⬇️ 插入編輯器</button>
+        </div>
+      </div>
+      `;
+      document.getElementById('modalOK').style.display='none';
+      document.getElementById('modalActions').style.display='none';
+      setTimeout(()=>{ cbManType='img'; },30);
       break;
     case 'gallery':
       html=`<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;gap:8px;">
-        <span style="font-size:11px;color:var(--text2);flex:1;">點選圖片/影片可插入 BBCode。圖庫會儲存最新30項在此裝置，重新開啟仍可使用。</span>
-        <span id="galCounter" style="font-size:11px;font-family:'JetBrains Mono',monospace;color:var(--gold);white-space:nowrap;background:var(--bg);border:1px solid var(--border);border-radius:5px;padding:2px 8px;">0/30</span>
+        <span style="font-size:11px;color:var(--text2);flex:1;">點選圖片/影片即可插入文章使用。圖庫會儲存最新${MAX_GALLERY}項在此裝置，同裝置重新開啟仍可使用。</span>
+        <span id="galCounter" style="font-size:11px;font-family:'JetBrains Mono',monospace;color:var(--gold);white-space:nowrap;background:var(--bg);border:1px solid var(--border);border-radius:5px;padding:2px 8px;">0/${MAX_GALLERY}</span>
       </div>
       <div class="gallery-grid" id="galGrid"></div>
       <div style="margin-top:10px;text-align:right;">
@@ -1094,21 +1512,7 @@ function openModal(tag){
       <label>販售金額（流金幣）</label>
       <input id="f1" type="number" min="0" value="0" placeholder="例：100">
       <label>販售內容</label>
-      <textarea id="f2" placeholder="輸入販售的內容...">${esc(selVal)}</textarea>
-      <div id="sellPreview" style="margin-top:10px;padding:10px 14px;background:#fffbe6;border:1px solid #e6d87a;border-radius:6px;font-size:12px;color:#555;">
-        <div style="color:#888;margin-bottom:6px;">💡 此帖售價 <b id="sellAmt">0</b> 流金幣，已有 0 人購買 <span style="color:#aaa;">[記錄] [購買]</span></div>
-        <div id="sellContent" style="color:#666;">（販售內容預覽）</div>
-      </div>`;
-      setTimeout(()=>{
-        const f1=document.getElementById('f1');
-        const f2=document.getElementById('f2');
-        const amt=document.getElementById('sellAmt');
-        const cnt=document.getElementById('sellContent');
-        if(f1)f1.addEventListener('input',()=>{if(amt)amt.textContent=f1.value||'0';});
-        if(f2)f2.addEventListener('input',()=>{if(cnt)cnt.textContent=f2.value||'（販售內容預覽）';});
-        if(f1)f1.focus();
-      },50);
-      break;
+      <textarea id="f2" placeholder="輸入販售的內容...">${esc(selVal)}</textarea>`;break;
     case 'size':
       html=`<label>選擇文字大小（1~7）</label>
       <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;">${SIZES.map(s=>`<button onclick="insertSize(${s})" style="padding:5px 12px;border-radius:5px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-size:${8+s*2}px;cursor:pointer;">${s}</button>`).join('')}</div>
@@ -1134,47 +1538,21 @@ function openModal(tag){
   },80);
 }
 
-function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function escHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 
 /* table builder */
 let tblRowCount=0;
 let tblColCount=2;
 function initTable(cols){
-  tblColCount=cols;
-  renderHeaderRow();
-  document.getElementById('tblRows').innerHTML='';
-  tblRowCount=0;
+  tblColCount=cols;renderHeaderRow();
+  document.getElementById('tblRows').innerHTML='';tblRowCount=0;
   addTableRow();addTableRow();
 }
 function renderHeaderRow(){
-  const hr=document.getElementById('tblHeaderRow');
-  if(!hr)return;
+  const hr=document.getElementById('tblHeaderRow');if(!hr)return;
   hr.style.gridTemplateColumns=`repeat(${tblColCount},1fr) 28px`;
   hr.innerHTML=Array.from({length:tblColCount},(_,i)=>`<input placeholder="標題${i+1}" class="tbl-header-cell" style="background:var(--bg);border:1px solid var(--border);border-radius:5px;padding:5px 8px;color:var(--text);font-size:12px;outline:none;">`).join('')+'<span></span>';
-}
-function changeColCount(delta){
-  tblColCount=Math.max(1,Math.min(8,tblColCount+delta));
-  document.getElementById('colCountDisplay').textContent=tblColCount;
-  renderHeaderRow();
-  // re-render all existing rows with new col count
-  const rows=[...document.querySelectorAll('#tblRows .tbl-row')];
-  rows.forEach(r=>{
-    const existing=[...r.querySelectorAll('.tbl-cell')].map(i=>i.value);
-    r.style.gridTemplateColumns=`repeat(${tblColCount},1fr) 28px`;
-    const cells=r.querySelectorAll('.tbl-cell');
-    // add missing cols
-    const delBtn=r.querySelector('.tbl-del-btn');
-    while(r.querySelectorAll('.tbl-cell').length<tblColCount){
-      const inp=document.createElement('input');
-      inp.className='tbl-cell';inp.placeholder='內容';
-      inp.style.cssText='background:var(--bg);border:1px solid var(--border);border-radius:5px;padding:5px 8px;color:var(--text);font-size:12px;outline:none;';
-      r.insertBefore(inp,delBtn);
-    }
-    // remove extra cols
-    while(r.querySelectorAll('.tbl-cell').length>tblColCount){
-      r.querySelectorAll('.tbl-cell')[r.querySelectorAll('.tbl-cell').length-1].remove();
-    }
-  });
 }
 function addTableRow(){
   tblRowCount++;
@@ -1191,11 +1569,9 @@ function addTableRow(){
 let dialogRowCount=0;
 function addDialogRow(side){
   dialogRowCount++;
-  const container=document.getElementById('dialogRows');
-  if(!container)return;
+  const container=document.getElementById('dialogRows');if(!container)return;
   const row=document.createElement('div');
-  row.className='dialog-row';
-  row.dataset.side=side;
+  row.className='dialog-row';row.dataset.side=side;
   const isLeft=side==='left';
   row.style.cssText='display:flex;align-items:center;gap:8px;';
   row.innerHTML=`<span style="font-size:10px;font-weight:700;min-width:44px;color:${isLeft?'#60a5fa':'#4ade80'};text-align:center;">${isLeft?'⬅ 左':'右 ➡'}</span><input placeholder="${isLeft?'左側說的話':'右側說的話'}" style="flex:1;background:var(--bg);border:1px solid var(--border);border-radius:5px;padding:6px 10px;color:var(--text);font-size:12px;outline:none;"><button class="tbl-del-btn" onclick="this.closest('.dialog-row').remove()">✕</button>`;
@@ -1214,72 +1590,189 @@ function selectColor(c){selectedColor=c;document.getElementById('colorVal').text
 function prevYT(type){const v=document.getElementById('f1').value;const id=extractYTId(v);const prev=document.getElementById('ytPrev');const err=document.getElementById('ytErr');const embed=document.getElementById('ytEmbed');if(!v.trim()){prev.textContent='';err.textContent='';embed.innerHTML='';return;}if(id){prev.textContent=`✅ ID：${id} → [${type}]${id}[/${type}]`;err.textContent='';embed.innerHTML=`<iframe class="yt-embed" src="https://www.youtube.com/embed/${id}" allowfullscreen loading="lazy"></iframe>`;}else{prev.textContent='';err.textContent='❌ 無法解析影片 ID，請確認網址';embed.innerHTML='';}}
 function prevTT(){const v=document.getElementById('f1').value;const id=extractTTId(v);const prev=document.getElementById('ttPrev');const err=document.getElementById('ttErr');if(!v.trim()){prev.textContent='';err.textContent='';return;}if(id){prev.textContent=`✅ ID：${id} → [xtiktok]${id}[/xtiktok]`;err.textContent='';}else{prev.textContent='';err.textContent='❌ 無法解析 TikTok ID，請確認網址';}}
 function prevImg(){const v=document.getElementById('f1').value.trim();const d=document.getElementById('imgPrev');if(!v){d.innerHTML='';return;}d.innerHTML=`<img src="${v}" style="max-width:100%;max-height:160px;border-radius:5px;" onerror="this.style.display='none'">`;}
+
 /* ═══════════════════════════════════════════
-   CATBOX
+   CATBOX AUTO-UPLOAD
 ═══════════════════════════════════════════ */
-let catboxType='img';
-function setCatboxType(type){
-  catboxType=type;
-  const imgBtn=document.getElementById('cbTypeImg');
-  const vidBtn=document.getElementById('cbTypeVid');
-  if(!imgBtn||!vidBtn)return;
-  if(type==='img'){
-    imgBtn.className='btn btn-gold';imgBtn.style.flex='1';imgBtn.style.fontSize='12px';
-    vidBtn.className='btn btn-ghost';vidBtn.style.flex='1';vidBtn.style.fontSize='12px';
-  } else {
-    vidBtn.className='btn btn-gold';vidBtn.style.flex='1';vidBtn.style.fontSize='12px';
-    imgBtn.className='btn btn-ghost';imgBtn.style.flex='1';imgBtn.style.fontSize='12px';
-  }
-  prevCatbox();
+const CATBOX_API='https://catbox-proxy.good406441.workers.dev/';
+const CATBOX_USERHASH='1955d4f3fdde85910d8657ba8';
+let cbDoneUrls=[]; // finished uploads ready to insert
+
+function cbHandleDrop(e){
+  e.preventDefault();
+  document.getElementById('cbDropZone').classList.remove('cb-drag-over');
+  cbHandleFiles(e.dataTransfer.files);
 }
-function prevCatbox(){
-  const el=document.getElementById('cbUrl');
+
+function cbHandleFiles(files){
+  if(!files||!files.length)return;
+  cbDoneUrls=[];
+  document.getElementById('cbInsertAll').style.display='none';
+  [...files].forEach(file=>cbUploadOne(file));
+}
+
+async function cbUploadOne(file){
+  const isVideo=/\.(mp4|mov|webm)$/i.test(file.name);
+  const isImg=/\.(jpe?g|png|gif|webp|bmp)$/i.test(file.name);
+  if(!isVideo&&!isImg){showToast(`⚠️ 不支援的格式：${file.name}`);return;}
+  if(file.size>200*1024*1024){showToast(`⚠️ 檔案超過 200MB：${file.name}`);return;}
+
+  // Build queue item
+  const id='cb_'+Date.now()+'_'+Math.random().toString(36).slice(2,6);
+  const queue=document.getElementById('cbQueue');
+  if(!queue)return;
+  const div=document.createElement('div');
+  div.className='cb-item';div.id=id;
+
+  // Thumbnail
+  let thumbHtml='';
+  if(isImg){
+    const objUrl=URL.createObjectURL(file);
+    thumbHtml=`<div class="cb-thumb"><img src="${objUrl}" onload="URL.revokeObjectURL(this.src)" onerror="this.parentElement.textContent='🖼'"></div>`;
+  } else {
+    thumbHtml=`<div class="cb-thumb">🎥</div>`;
+  }
+
+  div.innerHTML=`${thumbHtml}
+  <div class="cb-info">
+    <div class="cb-name">${escHtml(file.name)}</div>
+    <div class="cb-status" id="${id}_st" style="color:var(--text2);">⏳ 準備上傳…</div>
+    <div class="cb-bar-wrap"><div class="cb-bar" id="${id}_bar"></div></div>
+    <div id="${id}_result"></div>
+  </div>`;
+  queue.appendChild(div);
+  queue.scrollTop=queue.scrollHeight;
+
+  const st=document.getElementById(id+'_st');
+  const bar=document.getElementById(id+'_bar');
+  const result=document.getElementById(id+'_result');
+
+  try{
+    if(st){st.textContent='⬆️ 上傳中…';st.style.color='var(--text2)';}
+    if(bar){bar.style.width='60%';} // indeterminate progress
+
+    const fd=new FormData();
+    fd.append('reqtype','fileupload');
+    fd.append('userhash', CATBOX_USERHASH);
+    fd.append('fileToUpload',file);
+
+    const res=await fetch(CATBOX_API,{method:'POST',body:fd});
+    const json=await res.json();
+    if(!json.url) throw new Error(json.error||'上傳失敗');
+    const url=json.url;
+    if(bar){bar.style.width='100%';bar.style.background='#22c55e';}
+    if(st){st.textContent='✅ 上傳成功！';st.style.color='#22c55e';}
+    if(result){
+      result.innerHTML=`<div class="cb-url-row">
+        <span class="cb-url-box" title="${url}" onclick="navigator.clipboard&&navigator.clipboard.writeText('${url}').then(()=>showToast('✅ 已複製連結'))">${url}</span>
+        <button class="cb-insert-btn" onclick="cbInsertOne('${url}','${isVideo?'vid':'img'}')">插入</button>
+      </div>`;
+    }
+    addToGallery(url,isVideo?'vid':'img');
+    cbDoneUrls.push({url,type:isVideo?'vid':'img'});
+    cbCheckAllDone();
+
+  }catch(err){
+    console.error('Catbox upload error:',err);
+    if(bar){bar.style.width='100%';bar.style.background='#ef4444';}
+    if(st){st.textContent=`❌ 上傳失敗：${err.message}`;st.style.color='#ef4444';}
+  }
+}
+
+function cbCheckAllDone(){
+  // Show "insert all" button once at least one upload is done
+  const insertAll=document.getElementById('cbInsertAll');
+  if(insertAll&&cbDoneUrls.length>0)insertAll.style.display='block';
+}
+
+function cbInsertOne(url,type){
+  const bb=type==='vid'?`[xmp4]${url}[/xmp4]\n`:`[ximg]${url}[/ximg]\n`;
+  insertAtCursor(bb);
+  showToast('✅ 已插入！');
+}
+
+function cbInsertAllDone(){
+  if(!cbDoneUrls.length){showToast('⚠️ 尚無完成的上傳');return;}
+  let code='';
+  cbDoneUrls.forEach(({url,type})=>{
+    code+=type==='vid'?`[xmp4]${url}[/xmp4]\n`:`[ximg]${url}[/ximg]\n`;
+  });
+  insertAtCursor(code);
+  showToast(`✅ 已插入 ${cbDoneUrls.length} 個檔案！`);
+  closeModal();
+}
+
+/* ── Catbox Tab 切換 ── */
+function cbSwitchTab(tab){
+  const isAuto=tab==='auto';
+  const tabAuto=document.getElementById('cbTabAuto');
+  const tabManual=document.getElementById('cbTabManual');
+  const paneAuto=document.getElementById('cbPaneAuto');
+  const paneManual=document.getElementById('cbPaneManual');
+  if(!tabAuto||!tabManual||!paneAuto||!paneManual)return;
+  tabAuto.style.background=isAuto?'var(--gold)':'var(--surface2)';
+  tabAuto.style.color=isAuto?'#000':'var(--text2)';
+  tabManual.style.background=isAuto?'var(--surface2)':'var(--gold)';
+  tabManual.style.color=isAuto?'var(--text2)':'#000';
+  paneAuto.style.display=isAuto?'':'none';
+  paneManual.style.display=isAuto?'none':'';
+}
+
+/* ── Catbox 手動輸入 ── */
+let cbManType='img';
+function cbSetManType(type){
+  cbManType=type;
+  const imgBtn=document.getElementById('cbManTypeImg');
+  const vidBtn=document.getElementById('cbManTypeVid');
+  if(!imgBtn||!vidBtn)return;
+  imgBtn.className=type==='img'?'btn btn-gold':'btn btn-ghost';
+  imgBtn.style.flex='1';imgBtn.style.fontSize='12px';
+  vidBtn.className=type==='vid'?'btn btn-gold':'btn btn-ghost';
+  vidBtn.style.flex='1';vidBtn.style.fontSize='12px';
+  cbPrevManual();
+}
+function cbPrevManual(){
+  const el=document.getElementById('cbManUrl');
   const v=el?el.value.trim():'';
-  const err=document.getElementById('cbErr');
-  const prev=document.getElementById('cbPrev');
+  const err=document.getElementById('cbManErr');
+  const prev=document.getElementById('cbManPrev');
   if(!err||!prev)return;
   if(!v){err.textContent='';prev.innerHTML='';return;}
-  if(!/^https?:\/\//i.test(v)){err.textContent='❌ 請貼上有效的網址';prev.innerHTML='';return;}
+  if(!/^https?:\/\//i.test(v)){err.textContent='❌ 請貼上有效的 https:// 網址';prev.innerHTML='';return;}
   err.textContent='';
-  if(catboxType==='img'){
-    prev.innerHTML=`<div style="font-size:11px;color:#22c55e;margin-bottom:6px;">✅ 圖片預覽</div><img src="${v}" style="max-width:100%;max-height:180px;border-radius:6px;display:block;" onerror="this.style.display='none'">`;
+  if(cbManType==='img'){
+    prev.innerHTML=`<div style="font-size:11px;color:#22c55e;margin-bottom:5px;">✅ 圖片預覽</div>
+      <img src="${v}" style="max-width:100%;max-height:160px;border-radius:6px;display:block;" onerror="this.parentElement.innerHTML='<div style=\\'font-size:11px;color:#ef4444;\\'>❌ 無法載入圖片，請確認連結</div>'">`;
   } else {
-    prev.innerHTML=`<div style="font-size:11px;color:#22c55e;margin-bottom:6px;">✅ 影片預覽</div><video src="${v}" controls style="max-width:100%;max-height:200px;border-radius:6px;display:block;" onerror="this.style.display='none'"></video>`;
+    prev.innerHTML=`<div style="font-size:11px;color:#22c55e;margin-bottom:5px;">✅ 影片預覽</div>
+      <video src="${v}" controls style="max-width:100%;max-height:180px;border-radius:6px;display:block;" onerror="this.parentElement.innerHTML='<div style=\\'font-size:11px;color:#ef4444;\\'>❌ 無法載入影片，請確認連結</div>'"></video>`;
   }
 }
-
-function prevPostimg(){
-  const el=document.getElementById('piUrl');
+function cbInsertManual(){
+  const el=document.getElementById('cbManUrl');
   const v=el?el.value.trim():'';
-  const err=document.getElementById('piErr');
-  const imgp=document.getElementById('piImgPrev');
-  if(!v){err.textContent='';imgp.innerHTML='';return;}
-
-  const m=v.match(/\[url=([^\]]+)\]\[img\]([^\[]+)\[\/img\]\[\/url\]/);
-  if(m){
-    const imgSrc=m[2].trim();
-    err.textContent='';
-    imgp.innerHTML=`<div style="font-size:11px;color:#22c55e;margin-bottom:6px;">✅ 格式正確，可以插入</div><img src="${imgSrc}" style="max-width:100%;max-height:180px;border-radius:6px;display:block;" onerror="this.style.display='none'">`;
-  } else {
-    err.textContent='❌ 格式不符，請貼上 Postimages「論壇外連」的完整代碼，格式為 [url=...][img]...[/img][/url]';
-    imgp.innerHTML='';
-  }
+  if(!v){showToast('❌ 請貼上 Catbox 連結');return;}
+  if(!v.startsWith('http')){showToast('❌ 請貼上有效的網址');return;}
+  if(cbManType==='img'){addToGallery(v,'img');insertAtCursor(`[ximg]${v}[/ximg]\n`);}
+  else{addToGallery(v,'vid');insertAtCursor(`[xmp4]${v}[/xmp4]\n`);}
+  showToast('✅ 已插入！');
+  closeModal();
 }
+
+function prevPostimg(){const el=document.getElementById('piUrl');const v=el?el.value.trim():'';const err=document.getElementById('piErr');const imgp=document.getElementById('piImgPrev');if(!v){err.textContent='';imgp.innerHTML='';return;}const m=v.match(/\[url=([^\]]+)\]\[img\]([^\[]+)\[\/img\]\[\/url\]/);if(m){const imgSrc=m[2].trim();err.textContent='';imgp.innerHTML=`<div style="font-size:11px;color:#22c55e;margin-bottom:6px;">✅ 格式正確，可以插入</div><img src="${imgSrc}" style="max-width:100%;max-height:180px;border-radius:6px;display:block;" onerror="this.style.display='none'">`;}else{err.textContent='❌ 格式不符，請貼上 Postimages「論壇外連」的完整代碼，格式為 [url=...][img]...[/img][/url]';imgp.innerHTML='';}}
 
 /* ═══════════════════════════════════════════
    CONFIRM INSERT
 ═══════════════════════════════════════════ */
 function confirmInsert(){
   let code='';
-  const g=id=>{ const el=document.getElementById(id); return el?el.value.trim():''; };
-
+  const g=id=>{const el=document.getElementById(id);return el?el.value.trim():'';};
   switch(currentTag){
     case 'xgold':case 'xcenter':case 'xgban':case 'xnote':case 'xwarn':case 'xblue':case 'xgreen':case 'xred':case 'xinfo':case 'xglass':case 'xtag':
       code=`[${currentTag}]${g('f1')}[/${currentTag}]\n`;break;
     case 'xspoiler': code=`[xspoiler=${g('f1')}]${g('f2')}[/xspoiler]\n`;break;
     case 'xsmall': code=`[xsmall]${g('f1')}[/xsmall]\n`;break;
     case 'xcard': code=`[xcard=${g('f1')}]${g('f2')}[/xcard]\n`;break;
-
     case 'quote':case 'xquote': code=`[${currentTag}]${g('f1')}[/${currentTag}]\n`;break;
     case 'xrate': code=`[xrate]${g('f1')}[/xrate]\n`;break;
     case 'xbtn': code=`[xbtn=${g('f1')}]${g('f2')}[/xbtn]\n`;break;
@@ -1292,54 +1785,21 @@ function confirmInsert(){
     case 'xmap': code=`[xmap]${g('f1')}[/xmap]\n`;break;
     case 'xmaplink': code=`[xmaplink]${g('f1')}[/xmaplink]\n`;break;
     case 'ximg':{const url=g('f1');if(url)addToGallery(url,'img');code=`[ximg]${url}[/ximg]\n`;break;}
-    case 'catbox':{
-      const cbEl=document.getElementById('cbUrl');
-      const cbRaw=cbEl?cbEl.value.trim():'';
-      if(!cbRaw){showToast('❌ 請貼上 Catbox 連結');return;}
-      if(!cbRaw.startsWith('http')){showToast('❌ 請貼上有效的網址');return;}
-      if(catboxType==='img'){
-        addToGallery(cbRaw,'img');
-        code=`[ximg]${cbRaw}[/ximg]\n`;
-      } else {
-        addToGallery(cbRaw,'vid');
-        code=`[xmp4]${cbRaw}[/xmp4]\n`;
-      }
-      break;}
-    case 'postimages':{
-      const el=document.getElementById('piUrl');
-      const raw=el?el.value.trim():'';
-      if(!raw){showToast('❌ 請貼上論壇外連代碼');return;}
-      const m=raw.match(/\[url=([^\]]+)\]\[img\]([^\[]+)\[\/img\]\[\/url\]/);
-      if(!m){showToast('❌ 格式不符，請貼上論壇外連代碼');return;}
-      addToGallery(m[2].trim(),'img');
-      code=raw+'\n';
-      break;}
-    case 'dialog':{
-      const rows=[...document.querySelectorAll('#dialogRows .dialog-row')];
-      code=rows.map(r=>{
-        const side=r.dataset.side;
-        const txt=r.querySelector('input').value.trim();
-        return txt?`[x${side}]${txt}[/x${side}]`:'';
-      }).filter(Boolean).join('')+'\n';
-      break;}
+    case 'catbox':{/* handled by auto-upload buttons, no-op here */break;}
+    case 'postimages':{const el=document.getElementById('piUrl');const raw=el?el.value.trim():'';if(!raw){showToast('❌ 請貼上論壇外連代碼');return;}const m=raw.match(/\[url=([^\]]+)\]\[img\]([^\[]+)\[\/img\]\[\/url\]/);if(!m){showToast('❌ 格式不符，請貼上論壇外連代碼');return;}addToGallery(m[2].trim(),'img');code=raw+'\n';break;}
+    case 'dialog':{const rows=[...document.querySelectorAll('#dialogRows .dialog-row')];code=rows.map(r=>{const side=r.dataset.side;const txt=r.querySelector('input').value.trim();return txt?`[x${side}]${txt}[/x${side}]`:''}).filter(Boolean).join('')+'\n';break;}
     case 'xtable':{
       const head=g('tblHead');
       const headerCells=[...document.querySelectorAll('#tblHeaderRow .tbl-header-cell')].map(i=>i.value.trim());
       const dataRows=[...document.querySelectorAll('#tblRows .tbl-row')];
       const colCount=tblColCount;
       if(colCount===1){
-        // single col: use xtr= format
         const rows=dataRows.map(r=>{const cells=[...r.querySelectorAll('.tbl-cell')];return{k:headerCells[0]||'',v:cells[0]?cells[0].value.trim():''};}).filter(r=>r.v);
         code=`[xthead]${head}[/xthead]\n`+rows.map(r=>`[xtr=${r.k}]${r.v}[/xtr]`).join('\n')+'\n';
       } else {
-        // multi-col: build HTML table style via xtr with pipe delimiter
-        // header row
         code=`[xthead]${head}[/xthead]\n`;
         if(headerCells.some(c=>c)){code+=`[xtr=${headerCells[0]||''}]${headerCells.slice(1).join('|')}[/xtr]\n`;}
-        dataRows.forEach(r=>{
-          const cells=[...r.querySelectorAll('.tbl-cell')].map(i=>i.value.trim());
-          if(cells.some(c=>c))code+=`[xtr=${cells[0]||''}]${cells.slice(1).join('|')}[/xtr]\n`;
-        });
+        dataRows.forEach(r=>{const cells=[...r.querySelectorAll('.tbl-cell')].map(i=>i.value.trim());if(cells.some(c=>c))code+=`[xtr=${cells[0]||''}]${cells.slice(1).join('|')}[/xtr]\n`;});
       }
       break;}
     case 'hide':{const num=String(parseInt(g('f1')||'0',10));const type_=g('f2');const cnt=g('f3');code=`[hide=${num},${type_}]${cnt}[/hide]\n`;break;}
@@ -1354,7 +1814,7 @@ function confirmInsert(){
 function closeModal(){document.getElementById('modalOverlay').classList.remove('active');}
 function closeModalOverlay(e){if(e.target===document.getElementById('modalOverlay'))closeModal();}
 document.addEventListener('keydown',e=>{
-  if(e.key==='Escape')closeModal();
+  if(e.key==='Escape'){closeModal();if(currentPanel4)closePanel4();}
   if(e.key==='Enter'&&document.getElementById('modalOverlay').classList.contains('active')){
     const a=document.activeElement;
     if(a&&a.tagName!=='TEXTAREA'&&a.tagName!=='SELECT'&&!a.classList.contains('tbl-add-btn')&&a.id!=='modalOK'){e.preventDefault();confirmInsert();}
@@ -1366,10 +1826,9 @@ document.addEventListener('keydown',e=>{
 ═══════════════════════════════════════════ */
 function updatePreview(){
   let h=editor.value;
-  // XSS protection: escape raw HTML tags from user input (< > &)
-  // BBCode uses [] so this is safe - only raw HTML is neutralised
+  // Escape raw HTML first
   h=h.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-  // Extract [code] blocks FIRST (before any other processing) to preserve literal content
+  // Extract [code] blocks
   const codePlaceholders=[];
   h=h.replace(/\[code\]([\s\S]*?)\[\/code\]/g,(match,inner)=>{
     const escaped=inner.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\[/g,'&#91;').replace(/\]/g,'&#93;');
@@ -1391,21 +1850,14 @@ function updatePreview(){
   h=h.replace(/\[align=center\]([\s\S]*?)\[\/align\]/g,'<div style="text-align:center">$1</div>');
   h=h.replace(/\[align=right\]([\s\S]*?)\[\/align\]/g,'<div style="text-align:right">$1</div>');
   h=h.replace(/\[hr\]/g,'<hr style="border:none;border-top:1px solid #ccc;margin:10px 0;opacity:.7;">');
-  // [code] handled at top of function
-
-  // [url=LINK][img]LINK[/img][/url] — Postimages 論壇外連，最優先
-  h=h.replace(/\[url=([^\]]+)\]\[img\]([\s\S]*?)\[\/img\]\[\/url\]/g,
-    (_,href,src)=>`<a href="${href}" target="_blank"><img class="forum-img" src="${src.trim()}" onerror="this.style.display='none'"></a>`);
-  h=h.replace(/\[url=([^\]]+)\]\[ximg\]([\s\S]*?)\[\/ximg\]\[\/url\]/g,
-    (_,href,src)=>`<a href="${href}" target="_blank"><img class="forum-img" src="${src.trim()}" onerror="this.style.display='none'"></a>`);
-  // plain url
+  // url+img (Postimages)
+  h=h.replace(/\[url=([^\]]+)\]\[img\]([\s\S]*?)\[\/img\]\[\/url\]/g,(_,href,src)=>`<a href="${href}" target="_blank"><img class="forum-img" src="${src.trim()}" onerror="this.style.display='none'"></a>`);
+  h=h.replace(/\[url=([^\]]+)\]\[ximg\]([\s\S]*?)\[\/ximg\]\[\/url\]/g,(_,href,src)=>`<a href="${href}" target="_blank"><img class="forum-img" src="${src.trim()}" onerror="this.style.display='none'"></a>`);
   h=h.replace(/\[url\]([\s\S]*?)\[\/url\]/g,'<a href="$1" style="color:#3b82f6" target="_blank">$1</a>');
   h=h.replace(/\[url=([^\]]+)\]([\s\S]*?)\[\/url\]/g,'<a href="$1" style="color:#3b82f6" target="_blank">$2</a>');
-
   // xhr
   h=h.replace(/\[xhr\]x\[\/xhr\]/g,'<hr class="xhr-line">');
-
-  // block map (simple wrap tags)
+  // block map
   const bm=[
     ['xgold',c=>`<div class="xgold-box">${c}</div>`],
     ['xcenter',c=>`<div class="xcenter-box">${c}</div>`],
@@ -1427,363 +1879,86 @@ function updatePreview(){
     ['xmp4',c=>`<video class="forum-img" controls style="max-width:100%;border-radius:6px;margin:4px 0;"><source src="${c}" type="video/mp4">MP4: ${c}</video>`],
     ['xvmp4',c=>`<video class="forum-img" controls style="max-width:320px;border-radius:6px;margin:4px 0;"><source src="${c}" type="video/mp4">MP4: ${c}</video>`],
     ['xmp3',c=>`<audio controls style="width:100%;margin:6px 0;"><source src="${c}" type="audio/mpeg">MP3: ${c}</audio>`],
-    ['xsound',c=>{
-      const encoded=encodeURIComponent(c.trim());
-      return `<iframe width="100%" height="166" scrolling="no" frameborder="no" allow="autoplay" loading="lazy" style="border-radius:8px;margin:6px 0;" src="https://w.soundcloud.com/player/?url=${encoded}&color=%23f0b429&auto_play=false&hide_related=true&show_comments=false&show_user=true&show_reposts=false&show_teaser=false"></iframe>`;
-    }],
+    ['xsound',c=>{const encoded=encodeURIComponent(c.trim());return `<iframe width="100%" height="166" scrolling="no" frameborder="no" allow="autoplay" loading="lazy" style="border-radius:8px;margin:6px 0;" src="https://w.soundcloud.com/player/?url=${encoded}&color=%23f0b429&auto_play=false&hide_related=true&show_comments=false&show_user=true&show_reposts=false&show_teaser=false"></iframe>`;}],
     ['xmaplink',c=>`<div style="margin:6px 0"><div class="media-ph" style="margin-bottom:4px;">📍 <a href="https://www.google.com/maps/search/${encodeURIComponent(c)}" target="_blank" style="color:#3b82f6">🗺 在 Google Maps 搜尋「${c}」</a></div><iframe src="https://maps.google.com/maps?q=${encodeURIComponent(c)}&output=embed&z=15" style="width:100%;height:200px;border:none;border-radius:8px;" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe></div>`],
     ['xmap',c=>`<div style="margin:6px 0"><div class="media-ph" style="margin-bottom:4px;">🗺 <a href="https://www.google.com/maps?q=${encodeURIComponent(c)}" target="_blank" style="color:#3b82f6">在 Google Maps 查看座標 ${c}</a></div><iframe src="https://maps.google.com/maps?q=${encodeURIComponent(c)}&output=embed&z=15" style="width:100%;height:200px;border:none;border-radius:8px;" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe></div>`],
   ];
   for(const [tag,fn] of bm){
     h=h.replace(new RegExp(`\\[${tag}\\]([\\s\\S]*?)\\[\\/${tag}\\]`,'g'),(_,c)=>fn(c.trim()));
   }
-
-  // YouTube embed (actual iframe preview)
-  h=h.replace(/\[xyoutube\]([\s\S]*?)\[\/xyoutube\]/g,
-    (_,id)=>`<iframe class="yt-embed" src="https://www.youtube.com/embed/${id.trim()}" allowfullscreen loading="lazy"></iframe>`);
-  h=h.replace(/\[xsyoutube\]([\s\S]*?)\[\/xsyoutube\]/g,
-    (_,id)=>`<iframe style="width:280px;aspect-ratio:9/16;max-height:500px;border-radius:10px;border:none;margin:6px 0;display:block;" src="https://www.youtube.com/embed/${id.trim()}" allowfullscreen loading="lazy"></iframe>`);
-
-  // TikTok: vertical iframe embed
-  h=h.replace(/\[xtiktok\]([\s\S]*?)\[\/xtiktok\]/g,
-    (_,id)=>{
-      const tid=id.trim();
-      return `<div style="display:flex;flex-direction:column;align-items:flex-start;margin:6px 0;">
-        <iframe src="https://www.tiktok.com/embed/v2/${tid}" style="width:280px;height:500px;border-radius:10px;border:none;display:block;" allowfullscreen loading="lazy"></iframe>
-        <div class="media-ph" style="margin-top:4px;font-size:11px;">🎶 TikTok ID: <a href="https://www.tiktok.com/video/${tid}" target="_blank" style="color:#3b82f6">${tid}</a></div>
-      </div>`;
-    });
-
-  // Sendvid embed
-  h=h.replace(/\[xsendvid\]([\s\S]*?)\[\/xsendvid\]/g,
-    (_,id)=>`<iframe src="https://sendvid.com/embed/${id.trim()}" style="width:100%;aspect-ratio:16/9;border-radius:6px;border:none;margin:6px 0;display:block;" allowfullscreen loading="lazy"></iframe>`);
-
-  // xspoiler — clickable spoiler
-  h=h.replace(/\[xspoiler=([^\]]+)\]([\s\S]*?)\[\/xspoiler\]/g,(_,btn,body)=>{
-    const id='sp'+Math.random().toString(36).slice(2,7);
-    return `<div class="xspoiler-wrap">
-      <div id="${id}_btn" onclick="(function(){var b=document.getElementById('${id}_body'),a=document.getElementById('${id}_btn');var open=b.style.display!=='none';b.style.display=open?'none':'block';a.innerHTML=(open?'▶ ':'▼ ')+'${btn.replace(/'/g,"\'")}';})();" style="cursor:pointer;display:flex;align-items:center;gap:6px;padding:7px 12px;background:#f0f0f0;border:1px solid #ddd;border-radius:5px;font-size:13px;user-select:none;">▶ ${btn}</div>
-      <div id="${id}_body" style="display:none;padding:10px 14px;background:#fafafa;border:1px solid #ddd;border-top:none;border-radius:0 0 5px 5px;font-size:13px;color:#333;">${body.trim()}</div>
-    </div>`;
-  });
+  // YouTube
+  h=h.replace(/\[xyoutube\]([\s\S]*?)\[\/xyoutube\]/g,(_,id)=>`<iframe class="yt-embed" src="https://www.youtube.com/embed/${id.trim()}" allowfullscreen loading="lazy"></iframe>`);
+  h=h.replace(/\[xsyoutube\]([\s\S]*?)\[\/xsyoutube\]/g,(_,id)=>`<iframe style="width:280px;aspect-ratio:9/16;max-height:500px;border-radius:10px;border:none;margin:6px 0;display:block;" src="https://www.youtube.com/embed/${id.trim()}" allowfullscreen loading="lazy"></iframe>`);
+  // TikTok
+  h=h.replace(/\[xtiktok\]([\s\S]*?)\[\/xtiktok\]/g,(_,id)=>{const tid=id.trim();return `<div style="display:flex;flex-direction:column;align-items:flex-start;margin:6px 0;"><iframe src="https://www.tiktok.com/embed/v2/${tid}" style="width:280px;height:500px;border-radius:10px;border:none;display:block;" allowfullscreen loading="lazy"></iframe><div class="media-ph" style="margin-top:4px;font-size:11px;">🎶 TikTok ID: <a href="https://www.tiktok.com/video/${tid}" target="_blank" style="color:#3b82f6">${tid}</a></div></div>`;});
+  // Sendvid
+  h=h.replace(/\[xsendvid\]([\s\S]*?)\[\/xsendvid\]/g,(_,id)=>`<iframe src="https://sendvid.com/embed/${id.trim()}" style="width:100%;aspect-ratio:16/9;border-radius:6px;border:none;margin:6px 0;display:block;" allowfullscreen loading="lazy"></iframe>`);
+  // xspoiler
+  h=h.replace(/\[xspoiler=([^\]]+)\]([\s\S]*?)\[\/xspoiler\]/g,(_,btn,body)=>{const id='sp'+Math.random().toString(36).slice(2,7);return `<div class="xspoiler-wrap"><div id="${id}_btn" onclick="(function(){var b=document.getElementById('${id}_body'),a=document.getElementById('${id}_btn');var open=b.style.display!=='none';b.style.display=open?'none':'block';a.innerHTML=(open?'▶ ':'▼ ')+'${btn.replace(/'/g,"\\'")}';})();" style="cursor:pointer;display:flex;align-items:center;gap:6px;padding:7px 12px;background:#f0f0f0;border:1px solid #ddd;border-radius:5px;font-size:13px;user-select:none;">▶ ${btn}</div><div id="${id}_body" style="display:none;padding:10px 14px;background:#fafafa;border:1px solid #ddd;border-top:none;border-radius:0 0 5px 5px;font-size:13px;color:#333;">${body.trim()}</div></div>`;});
   // xcard
-  h=h.replace(/\[xcard=([^\]]+)\]([\s\S]*?)\[\/xcard\]/g,
-    (_,t_,b)=>`<div class="xcard-box"><div class="xcard-title">${t_}</div><div class="xcard-body">${b.trim()}</div></div>`);
+  h=h.replace(/\[xcard=([^\]]+)\]([\s\S]*?)\[\/xcard\]/g,(_,t_,b)=>`<div class="xcard-box"><div class="xcard-title">${t_}</div><div class="xcard-body">${b.trim()}</div></div>`);
   // xbtn
-  h=h.replace(/\[xbtn=([^\]]+)\]([\s\S]*?)\[\/xbtn\]/g,
-    (_,url,text)=>`<a class="xbtn-link" href="${url}" target="_blank">${text.trim()}</a>`);
-
-  // dialog — handle each tag independently (supports consecutive same-side bubbles)
+  h=h.replace(/\[xbtn=([^\]]+)\]([\s\S]*?)\[\/xbtn\]/g,(_,url,text)=>`<a class="xbtn-link" href="${url}" target="_blank">${text.trim()}</a>`);
+  // dialog
   h=h.replace(/\[xleft\]([\s\S]*?)\[\/xleft\]/g,(_,c)=>`<div class="xleft-bubble"><span>${c.trim()}</span></div>`);
   h=h.replace(/\[xright\]([\s\S]*?)\[\/xright\]/g,(_,c)=>`<div class="xright-bubble"><span>${c.trim()}</span></div>`);
-
   // table
-  h=h.replace(/\[xthead\]([\s\S]*?)\[\/xthead\]((?:\s*\[xtr=[^\]]+\][\s\S]*?\[\/xtr\])*)/g,(_,head,rest)=>{
-    const rows=[...rest.matchAll(/\[xtr=([^\]]+)\]([\s\S]*?)\[\/xtr\]/g)].map(([,k,v])=>`<tr><th>${k}</th><td>${v}</td></tr>`).join('');
-    return `<table class="xtable"><tr><th colspan="2">${head.trim()}</th></tr>${rows}</table>`;
-  });
+  h=h.replace(/\[xthead\]([\s\S]*?)\[\/xthead\]((?:\s*\[xtr=[^\]]+\][\s\S]*?\[\/xtr\])*)/g,(_,head,rest)=>{const rows=[...rest.matchAll(/\[xtr=([^\]]+)\]([\s\S]*?)\[\/xtr\]/g)].map(([,k,v])=>`<tr><th>${k}</th><td>${v}</td></tr>`).join('');return `<table class="xtable"><tr><th colspan="2">${head.trim()}</th></tr>${rows}</table>`;});
   h=h.replace(/\[xtr=[^\]]+\][\s\S]*?\[\/xtr\]/g,'');
-
-  // hide — show lock bar + content preview
-  // Emoji [s:xxx] preview
-  h=h.replace(/\[s:(\d+)\]/g,(_,n)=>{
-    // Build URL from code - we look up in emojiData
-    let url='';
-    if(typeof emojiData!=='undefined'){
-      for(const cat of emojiData){
-        for(const page of cat.pages){
-          const found=page.find(e=>e.code===`[s:${n}]`);
-          if(found){url=found.url;break;}
-        }
-        if(url)break;
-      }
-    }
-    if(url) return `<img src="${url}" style="width:36px;height:36px;object-fit:contain;vertical-align:middle;" loading="lazy" alt="[s:${n}]">`;
-    return `[s:${n}]`;
-  });
+  // emoji
+  h=h.replace(/\[s:(\d+)\]/g,(_,n)=>{let url='';if(typeof emojiData!=='undefined'){for(const cat of emojiData){for(const page of cat.pages){const found=page.find(e=>e.code===`[s:${n}]`);if(found){url=found.url;break;}}if(url)break;}}if(url)return `<img src="${url}" style="width:36px;height:36px;object-fit:contain;vertical-align:middle;" loading="lazy" alt="[s:${n}]">`;return `[s:${n}]`;});
+  // hide / sell
   const hideTypes={'1':'發文數','2':'超激值','3':'回應好評度','4':'發文好評度','5':'熱心好評度','6':'歲月值'};
-  // sell preview
-  h=h.replace(/\[sell=(\d+)\]([\s\S]*?)\[\/sell\]/g,(_,amt,cnt)=>`
-    <div style="background:#fffbe6;border:1px solid #e6d87a;border-radius:6px;padding:10px 14px;margin:8px 0;">
-      <div style="font-size:12px;color:#888;margin-bottom:8px;">💡 此帖售價 <b style="color:#b8860b;">${amt}</b> 流金幣，已有 0 人購買 <span style="color:#aaa;font-size:11px;">[記錄] [購買]</span></div>
-      <div style="background:#f5f5f5;border-radius:4px;padding:8px 12px;font-size:13px;color:#555;">${cnt.trim()}</div>
-    </div>`);
+  h=h.replace(/\[sell=(\d+)\]([\s\S]*?)\[\/sell\]/g,(_,amt,cnt)=>`<div style="background:#fffbe6;border:1px solid #e6d87a;border-radius:6px;padding:10px 14px;margin:8px 0;"><div style="font-size:12px;color:#888;margin-bottom:8px;">💡 此帖售價 <b style="color:#b8860b;">${amt}</b> 流金幣，已有 0 人購買 <span style="color:#aaa;font-size:11px;">[記錄] [購買]</span></div><div style="background:#f5f5f5;border-radius:4px;padding:8px 12px;font-size:13px;color:#555;">${cnt.trim()}</div></div>`);
   h=h.replace(/\[hide=(\d+),(\d+)\]([\s\S]*?)\[\/hide\]/g,(_,num,type,cnt)=>`<div class="hide-box"><div style="margin-bottom:6px;">🔒 需要 ${num} ${hideTypes[type]||'歲月值'} 才能觀看</div><div style="padding:8px;border-radius:5px;background:rgba(0,0,0,0.04);font-size:12px;color:#555;border:1px dashed #ddd;">${cnt.trim()||'（無內容）'}</div></div>`);
   h=h.replace(/\[hide=(\d+)\]([\s\S]*?)\[\/hide\]/g,(_,num,cnt)=>`<div class="hide-box"><div style="margin-bottom:6px;">🔒 需要 ${num} 歲月值 才能觀看</div><div style="padding:8px;border-radius:5px;background:rgba(0,0,0,0.04);font-size:12px;color:#555;border:1px dashed #ddd;">${cnt.trim()||'（無內容）'}</div></div>`);
-
   // newline
   h=h.replace(/\n/g,'<br>');
-  // Restore [code] block placeholders
+  // Restore code blocks
   codePlaceholders.forEach((html,i)=>{h=h.replace(`«code${i}»`,html);});
   document.getElementById('preview').innerHTML=h||'<p style="color:#aaa;font-size:13px;text-align:center;margin-top:50px;">← 從左側選擇標籤開始</p>';
+  // 若合併模式的 overlay 正在顯示，同步更新它
+  const overlay=document.getElementById('previewOverlay');
+  const overlayBody=document.getElementById('previewOverlayBody');
+  if(overlay&&overlayBody&&overlay.style.display!=='none'){
+    overlayBody.innerHTML=document.getElementById('preview').innerHTML;
+  }
 }
-
-/* ═══════════════════════════════════════════
-   CATBOX AUTO UPLOAD
-═══════════════════════════════════════════ */
-// 貓盒自動上傳已移除
 
 /* ═══════════════════════════════════════════
    INIT
 ═══════════════════════════════════════════ */
 buildLeftPanel();
-// Restore last editor content from localStorage
+// Restore editor content
 try{
   const saved=localStorage.getItem('liujin_editor_content');
   if(saved){editor.value=saved;updatePreview();updateStats();}
 }catch(e){}
 pushUndo(editor.value||'');
 </script>
+
+<!-- OpenCC S2T -->
 <script src="https://cdn.jsdelivr.net/npm/opencc-js@1.0.5/dist/umd/full.min.js"></script>
 <script>
 let _s2tConv=null;
-function _getS2TConv(){
-  if(!_s2tConv){try{_s2tConv=OpenCC.Converter({from:'cn',to:'tw'});}catch(e){_s2tConv=null;}}
-  return _s2tConv;
-}
-function convertS2T(){
-  const conv=_getS2TConv();
-  if(!conv){showToast('❌ OpenCC 載入失敗，請檢查網路');return;}
-  try{
-    const pos=editor.selectionStart;
-    editor.value=conv(editor.value);
-    editor.selectionStart=editor.selectionEnd=pos;
-    updatePreview();updateStats();
-    showToast('✅ 已轉換為繁體中文');
-  }catch(e){showToast('❌ 轉換失敗');}
-}
+function _getS2TConv(){if(!_s2tConv){try{_s2tConv=OpenCC.Converter({from:'cn',to:'tw'});}catch(e){_s2tConv=null;}}return _s2tConv;}
+function convertS2T(){const conv=_getS2TConv();if(!conv){showToast('❌ OpenCC 載入失敗，請檢查網路');return;}try{const pos=editor.selectionStart;editor.value=conv(editor.value);editor.selectionStart=editor.selectionEnd=pos;updatePreview();updateStats();showToast('✅ 已轉換為繁體中文');}catch(e){showToast('❌ 轉換失敗');}}
 
 /* ═══════════════════════════════════════════
    EMOJI PANEL
 ═══════════════════════════════════════════ */
-const emojiData = [
-  {
-    name: '洋蔥頭',
-    pages: [
-      [
-        {code:'[s:335]',url:'https://www.g-years.com/2006/images/post/smile/yct/33.gif'},
-        {code:'[s:346]',url:'https://www.g-years.com/2006/images/post/smile/yct/16.gif'},
-        {code:'[s:345]',url:'https://www.g-years.com/2006/images/post/smile/yct/38.gif'},
-        {code:'[s:344]',url:'https://www.g-years.com/2006/images/post/smile/yct/36.gif'},
-        {code:'[s:343]',url:'https://www.g-years.com/2006/images/post/smile/yct/23.gif'},
-        {code:'[s:342]',url:'https://www.g-years.com/2006/images/post/smile/yct/13.gif'},
-        {code:'[s:341]',url:'https://www.g-years.com/2006/images/post/smile/yct/19.gif'},
-        {code:'[s:340]',url:'https://www.g-years.com/2006/images/post/smile/yct/05.gif'},
-        {code:'[s:339]',url:'https://www.g-years.com/2006/images/post/smile/yct/40.gif'},
-        {code:'[s:338]',url:'https://www.g-years.com/2006/images/post/smile/yct/44.gif'},
-        {code:'[s:337]',url:'https://www.g-years.com/2006/images/post/smile/yct/09.gif'},
-        {code:'[s:336]',url:'https://www.g-years.com/2006/images/post/smile/yct/24.gif'},
-        {code:'[s:347]',url:'https://www.g-years.com/2006/images/post/smile/yct/01.gif'},
-        {code:'[s:334]',url:'https://www.g-years.com/2006/images/post/smile/yct/46.gif'},
-        {code:'[s:333]',url:'https://www.g-years.com/2006/images/post/smile/yct/31.gif'},
-        {code:'[s:332]',url:'https://www.g-years.com/2006/images/post/smile/yct/07.gif'},
-      ],
-      [
-        {code:'[s:331]',url:'https://www.g-years.com/2006/images/post/smile/yct/34.gif'},
-        {code:'[s:330]',url:'https://www.g-years.com/2006/images/post/smile/yct/42.gif'},
-        {code:'[s:329]',url:'https://www.g-years.com/2006/images/post/smile/yct/10.gif'},
-        {code:'[s:328]',url:'https://www.g-years.com/2006/images/post/smile/yct/37.gif'},
-        {code:'[s:327]',url:'https://www.g-years.com/2006/images/post/smile/yct/50.gif'},
-        {code:'[s:326]',url:'https://www.g-years.com/2006/images/post/smile/yct/06.gif'},
-        {code:'[s:325]',url:'https://www.g-years.com/2006/images/post/smile/yct/08.gif'},
-        {code:'[s:358]',url:'https://www.g-years.com/2006/images/post/smile/yct/41.gif'},
-        {code:'[s:369]',url:'https://www.g-years.com/2006/images/post/smile/yct/47.gif'},
-        {code:'[s:368]',url:'https://www.g-years.com/2006/images/post/smile/yct/17.gif'},
-        {code:'[s:367]',url:'https://www.g-years.com/2006/images/post/smile/yct/03.gif'},
-        {code:'[s:366]',url:'https://www.g-years.com/2006/images/post/smile/yct/43.gif'},
-        {code:'[s:365]',url:'https://www.g-years.com/2006/images/post/smile/yct/25.gif'},
-        {code:'[s:364]',url:'https://www.g-years.com/2006/images/post/smile/yct/11.gif'},
-        {code:'[s:363]',url:'https://www.g-years.com/2006/images/post/smile/yct/49.gif'},
-        {code:'[s:362]',url:'https://www.g-years.com/2006/images/post/smile/yct/51.gif'},
-      ],
-      [
-        {code:'[s:361]',url:'https://www.g-years.com/2006/images/post/smile/yct/21.gif'},
-        {code:'[s:360]',url:'https://www.g-years.com/2006/images/post/smile/yct/14.gif'},
-        {code:'[s:359]',url:'https://www.g-years.com/2006/images/post/smile/yct/32.gif'},
-        {code:'[s:370]',url:'https://www.g-years.com/2006/images/post/smile/yct/15.gif'},
-        {code:'[s:357]',url:'https://www.g-years.com/2006/images/post/smile/yct/45.gif'},
-        {code:'[s:356]',url:'https://www.g-years.com/2006/images/post/smile/yct/35.gif'},
-        {code:'[s:355]',url:'https://www.g-years.com/2006/images/post/smile/yct/22.gif'},
-        {code:'[s:354]',url:'https://www.g-years.com/2006/images/post/smile/yct/18.gif'},
-        {code:'[s:353]',url:'https://www.g-years.com/2006/images/post/smile/yct/20.gif'},
-        {code:'[s:352]',url:'https://www.g-years.com/2006/images/post/smile/yct/02.gif'},
-        {code:'[s:351]',url:'https://www.g-years.com/2006/images/post/smile/yct/12.gif'},
-        {code:'[s:350]',url:'https://www.g-years.com/2006/images/post/smile/yct/04.gif'},
-        {code:'[s:349]',url:'https://www.g-years.com/2006/images/post/smile/yct/48.gif'},
-        {code:'[s:348]',url:'https://www.g-years.com/2006/images/post/smile/yct/39.gif'},
-      ],
-    ]
-  },
-  {
-    name: '旺旺',
-    pages: [
-      [
-        {code:'[s:257]',url:'https://www.g-years.com/2006/images/post/smile/wangwang/24.gif'},
-        {code:'[s:266]',url:'https://www.g-years.com/2006/images/post/smile/wangwang/18.gif'},
-        {code:'[s:265]',url:'https://www.g-years.com/2006/images/post/smile/wangwang/20.gif'},
-        {code:'[s:264]',url:'https://www.g-years.com/2006/images/post/smile/wangwang/12.gif'},
-        {code:'[s:263]',url:'https://www.g-years.com/2006/images/post/smile/wangwang/16.gif'},
-        {code:'[s:262]',url:'https://www.g-years.com/2006/images/post/smile/wangwang/36.gif'},
-        {code:'[s:261]',url:'https://www.g-years.com/2006/images/post/smile/wangwang/23.gif'},
-        {code:'[s:260]',url:'https://www.g-years.com/2006/images/post/smile/wangwang/13.gif'},
-        {code:'[s:259]',url:'https://www.g-years.com/2006/images/post/smile/wangwang/19.gif'},
-        {code:'[s:258]',url:'https://www.g-years.com/2006/images/post/smile/wangwang/1.gif'},
-        {code:'[s:267]',url:'https://www.g-years.com/2006/images/post/smile/wangwang/22.gif'},
-        {code:'[s:256]',url:'https://www.g-years.com/2006/images/post/smile/wangwang/33.gif'},
-        {code:'[s:255]',url:'https://www.g-years.com/2006/images/post/smile/wangwang/31.gif'},
-        {code:'[s:254]',url:'https://www.g-years.com/2006/images/post/smile/wangwang/34.gif'},
-        {code:'[s:253]',url:'https://www.g-years.com/2006/images/post/smile/wangwang/26.gif'},
-        {code:'[s:252]',url:'https://www.g-years.com/2006/images/post/smile/wangwang/8.gif'},
-      ],
-      [
-        {code:'[s:251]',url:'https://www.g-years.com/2006/images/post/smile/wangwang/28.gif'},
-        {code:'[s:250]',url:'https://www.g-years.com/2006/images/post/smile/wangwang/10.gif'},
-        {code:'[s:249]',url:'https://www.g-years.com/2006/images/post/smile/wangwang/37.gif'},
-        {code:'[s:276]',url:'https://www.g-years.com/2006/images/post/smile/wangwang/14.gif'},
-        {code:'[s:284]',url:'https://www.g-years.com/2006/images/post/smile/wangwang/3.gif'},
-        {code:'[s:283]',url:'https://www.g-years.com/2006/images/post/smile/wangwang/15.gif'},
-        {code:'[s:282]',url:'https://www.g-years.com/2006/images/post/smile/wangwang/17.gif'},
-        {code:'[s:281]',url:'https://www.g-years.com/2006/images/post/smile/wangwang/25.gif'},
-        {code:'[s:280]',url:'https://www.g-years.com/2006/images/post/smile/wangwang/11.gif'},
-        {code:'[s:279]',url:'https://www.g-years.com/2006/images/post/smile/wangwang/9.gif'},
-        {code:'[s:278]',url:'https://www.g-years.com/2006/images/post/smile/wangwang/2.gif'},
-        {code:'[s:277]',url:'https://www.g-years.com/2006/images/post/smile/wangwang/21.gif'},
-        {code:'[s:285]',url:'https://www.g-years.com/2006/images/post/smile/wangwang/7.gif'},
-        {code:'[s:275]',url:'https://www.g-years.com/2006/images/post/smile/wangwang/30.gif'},
-        {code:'[s:274]',url:'https://www.g-years.com/2006/images/post/smile/wangwang/32.gif'},
-        {code:'[s:273]',url:'https://www.g-years.com/2006/images/post/smile/wangwang/35.gif'},
-      ],
-      [
-        {code:'[s:272]',url:'https://www.g-years.com/2006/images/post/smile/wangwang/4.gif'},
-        {code:'[s:271]',url:'https://www.g-years.com/2006/images/post/smile/wangwang/5.gif'},
-        {code:'[s:270]',url:'https://www.g-years.com/2006/images/post/smile/wangwang/27.gif'},
-        {code:'[s:269]',url:'https://www.g-years.com/2006/images/post/smile/wangwang/6.gif'},
-        {code:'[s:268]',url:'https://www.g-years.com/2006/images/post/smile/wangwang/29.gif'},
-      ],
-    ]
-  },
-  {
-    name: '默認',
-    pages: [
-      [
-        {code:'[s:236]',url:'https://www.g-years.com/2006/images/post/smile/default/smile.gif'},
-        {code:'[s:226]',url:'https://www.g-years.com/2006/images/post/smile/default/10.gif'},
-        {code:'[s:227]',url:'https://www.g-years.com/2006/images/post/smile/default/8.gif'},
-        {code:'[s:228]',url:'https://www.g-years.com/2006/images/post/smile/default/sad.gif'},
-        {code:'[s:229]',url:'https://www.g-years.com/2006/images/post/smile/default/question.gif'},
-        {code:'[s:230]',url:'https://www.g-years.com/2006/images/post/smile/default/redface.gif'},
-        {code:'[s:231]',url:'https://www.g-years.com/2006/images/post/smile/default/1.gif'},
-        {code:'[s:232]',url:'https://www.g-years.com/2006/images/post/smile/default/13.gif'},
-        {code:'[s:233]',url:'https://www.g-years.com/2006/images/post/smile/default/12.gif'},
-        {code:'[s:234]',url:'https://www.g-years.com/2006/images/post/smile/default/6.gif'},
-        {code:'[s:235]',url:'https://www.g-years.com/2006/images/post/smile/default/5.gif'},
-        {code:'[s:247]',url:'https://www.g-years.com/2006/images/post/smile/default/7.gif'},
-        {code:'[s:237]',url:'https://www.g-years.com/2006/images/post/smile/default/4.gif'},
-        {code:'[s:238]',url:'https://www.g-years.com/2006/images/post/smile/default/cool.gif'},
-        {code:'[s:239]',url:'https://www.g-years.com/2006/images/post/smile/default/wink.gif'},
-        {code:'[s:240]',url:'https://www.g-years.com/2006/images/post/smile/default/14.gif'},
-      ],
-      [
-        {code:'[s:241]',url:'https://www.g-years.com/2006/images/post/smile/default/2.gif'},
-        {code:'[s:242]',url:'https://www.g-years.com/2006/images/post/smile/default/mrgreen.gif'},
-        {code:'[s:243]',url:'https://www.g-years.com/2006/images/post/smile/default/9.gif'},
-        {code:'[s:244]',url:'https://www.g-years.com/2006/images/post/smile/default/11.gif'},
-        {code:'[s:245]',url:'https://www.g-years.com/2006/images/post/smile/default/crazy.gif'},
-        {code:'[s:246]',url:'https://www.g-years.com/2006/images/post/smile/default/3.gif'},
-      ],
-    ]
-  }
-];
+const emojiData=[{name:'洋蔥頭',pages:[[{code:'[s:335]',url:'https://www.g-years.com/2006/images/post/smile/yct/33.gif'},{code:'[s:346]',url:'https://www.g-years.com/2006/images/post/smile/yct/16.gif'},{code:'[s:345]',url:'https://www.g-years.com/2006/images/post/smile/yct/38.gif'},{code:'[s:344]',url:'https://www.g-years.com/2006/images/post/smile/yct/36.gif'},{code:'[s:343]',url:'https://www.g-years.com/2006/images/post/smile/yct/23.gif'},{code:'[s:342]',url:'https://www.g-years.com/2006/images/post/smile/yct/13.gif'},{code:'[s:341]',url:'https://www.g-years.com/2006/images/post/smile/yct/19.gif'},{code:'[s:340]',url:'https://www.g-years.com/2006/images/post/smile/yct/05.gif'},{code:'[s:339]',url:'https://www.g-years.com/2006/images/post/smile/yct/40.gif'},{code:'[s:338]',url:'https://www.g-years.com/2006/images/post/smile/yct/44.gif'},{code:'[s:337]',url:'https://www.g-years.com/2006/images/post/smile/yct/09.gif'},{code:'[s:336]',url:'https://www.g-years.com/2006/images/post/smile/yct/24.gif'},{code:'[s:347]',url:'https://www.g-years.com/2006/images/post/smile/yct/01.gif'},{code:'[s:334]',url:'https://www.g-years.com/2006/images/post/smile/yct/46.gif'},{code:'[s:333]',url:'https://www.g-years.com/2006/images/post/smile/yct/31.gif'},{code:'[s:332]',url:'https://www.g-years.com/2006/images/post/smile/yct/07.gif'}],[{code:'[s:331]',url:'https://www.g-years.com/2006/images/post/smile/yct/34.gif'},{code:'[s:330]',url:'https://www.g-years.com/2006/images/post/smile/yct/42.gif'},{code:'[s:329]',url:'https://www.g-years.com/2006/images/post/smile/yct/10.gif'},{code:'[s:328]',url:'https://www.g-years.com/2006/images/post/smile/yct/37.gif'},{code:'[s:327]',url:'https://www.g-years.com/2006/images/post/smile/yct/50.gif'},{code:'[s:326]',url:'https://www.g-years.com/2006/images/post/smile/yct/06.gif'},{code:'[s:325]',url:'https://www.g-years.com/2006/images/post/smile/yct/08.gif'},{code:'[s:358]',url:'https://www.g-years.com/2006/images/post/smile/yct/41.gif'},{code:'[s:369]',url:'https://www.g-years.com/2006/images/post/smile/yct/47.gif'},{code:'[s:368]',url:'https://www.g-years.com/2006/images/post/smile/yct/17.gif'},{code:'[s:367]',url:'https://www.g-years.com/2006/images/post/smile/yct/03.gif'},{code:'[s:366]',url:'https://www.g-years.com/2006/images/post/smile/yct/43.gif'},{code:'[s:365]',url:'https://www.g-years.com/2006/images/post/smile/yct/25.gif'},{code:'[s:364]',url:'https://www.g-years.com/2006/images/post/smile/yct/11.gif'},{code:'[s:363]',url:'https://www.g-years.com/2006/images/post/smile/yct/49.gif'},{code:'[s:362]',url:'https://www.g-years.com/2006/images/post/smile/yct/51.gif'}],[{code:'[s:361]',url:'https://www.g-years.com/2006/images/post/smile/yct/21.gif'},{code:'[s:360]',url:'https://www.g-years.com/2006/images/post/smile/yct/14.gif'},{code:'[s:359]',url:'https://www.g-years.com/2006/images/post/smile/yct/32.gif'},{code:'[s:370]',url:'https://www.g-years.com/2006/images/post/smile/yct/15.gif'},{code:'[s:357]',url:'https://www.g-years.com/2006/images/post/smile/yct/45.gif'},{code:'[s:356]',url:'https://www.g-years.com/2006/images/post/smile/yct/35.gif'},{code:'[s:355]',url:'https://www.g-years.com/2006/images/post/smile/yct/22.gif'},{code:'[s:354]',url:'https://www.g-years.com/2006/images/post/smile/yct/18.gif'},{code:'[s:353]',url:'https://www.g-years.com/2006/images/post/smile/yct/20.gif'},{code:'[s:352]',url:'https://www.g-years.com/2006/images/post/smile/yct/02.gif'},{code:'[s:351]',url:'https://www.g-years.com/2006/images/post/smile/yct/12.gif'},{code:'[s:350]',url:'https://www.g-years.com/2006/images/post/smile/yct/04.gif'},{code:'[s:349]',url:'https://www.g-years.com/2006/images/post/smile/yct/48.gif'},{code:'[s:348]',url:'https://www.g-years.com/2006/images/post/smile/yct/39.gif'}]]},{name:'旺旺',pages:[[{code:'[s:257]',url:'https://www.g-years.com/2006/images/post/smile/wangwang/24.gif'},{code:'[s:266]',url:'https://www.g-years.com/2006/images/post/smile/wangwang/18.gif'},{code:'[s:265]',url:'https://www.g-years.com/2006/images/post/smile/wangwang/20.gif'},{code:'[s:264]',url:'https://www.g-years.com/2006/images/post/smile/wangwang/12.gif'},{code:'[s:263]',url:'https://www.g-years.com/2006/images/post/smile/wangwang/16.gif'},{code:'[s:262]',url:'https://www.g-years.com/2006/images/post/smile/wangwang/36.gif'},{code:'[s:261]',url:'https://www.g-years.com/2006/images/post/smile/wangwang/23.gif'},{code:'[s:260]',url:'https://www.g-years.com/2006/images/post/smile/wangwang/13.gif'},{code:'[s:259]',url:'https://www.g-years.com/2006/images/post/smile/wangwang/19.gif'},{code:'[s:258]',url:'https://www.g-years.com/2006/images/post/smile/wangwang/1.gif'},{code:'[s:267]',url:'https://www.g-years.com/2006/images/post/smile/wangwang/22.gif'},{code:'[s:256]',url:'https://www.g-years.com/2006/images/post/smile/wangwang/33.gif'},{code:'[s:255]',url:'https://www.g-years.com/2006/images/post/smile/wangwang/31.gif'},{code:'[s:254]',url:'https://www.g-years.com/2006/images/post/smile/wangwang/34.gif'},{code:'[s:253]',url:'https://www.g-years.com/2006/images/post/smile/wangwang/26.gif'},{code:'[s:252]',url:'https://www.g-years.com/2006/images/post/smile/wangwang/8.gif'}],[{code:'[s:251]',url:'https://www.g-years.com/2006/images/post/smile/wangwang/28.gif'},{code:'[s:250]',url:'https://www.g-years.com/2006/images/post/smile/wangwang/10.gif'},{code:'[s:249]',url:'https://www.g-years.com/2006/images/post/smile/wangwang/37.gif'},{code:'[s:276]',url:'https://www.g-years.com/2006/images/post/smile/wangwang/14.gif'},{code:'[s:284]',url:'https://www.g-years.com/2006/images/post/smile/wangwang/3.gif'},{code:'[s:283]',url:'https://www.g-years.com/2006/images/post/smile/wangwang/15.gif'},{code:'[s:282]',url:'https://www.g-years.com/2006/images/post/smile/wangwang/17.gif'},{code:'[s:281]',url:'https://www.g-years.com/2006/images/post/smile/wangwang/25.gif'},{code:'[s:280]',url:'https://www.g-years.com/2006/images/post/smile/wangwang/11.gif'},{code:'[s:279]',url:'https://www.g-years.com/2006/images/post/smile/wangwang/9.gif'},{code:'[s:278]',url:'https://www.g-years.com/2006/images/post/smile/wangwang/2.gif'},{code:'[s:277]',url:'https://www.g-years.com/2006/images/post/smile/wangwang/21.gif'},{code:'[s:285]',url:'https://www.g-years.com/2006/images/post/smile/wangwang/7.gif'},{code:'[s:275]',url:'https://www.g-years.com/2006/images/post/smile/wangwang/30.gif'},{code:'[s:274]',url:'https://www.g-years.com/2006/images/post/smile/wangwang/32.gif'},{code:'[s:273]',url:'https://www.g-years.com/2006/images/post/smile/wangwang/35.gif'}],[{code:'[s:272]',url:'https://www.g-years.com/2006/images/post/smile/wangwang/4.gif'},{code:'[s:271]',url:'https://www.g-years.com/2006/images/post/smile/wangwang/5.gif'},{code:'[s:270]',url:'https://www.g-years.com/2006/images/post/smile/wangwang/27.gif'},{code:'[s:269]',url:'https://www.g-years.com/2006/images/post/smile/wangwang/6.gif'},{code:'[s:268]',url:'https://www.g-years.com/2006/images/post/smile/wangwang/29.gif'}]]},{name:'默認',pages:[[{code:'[s:236]',url:'https://www.g-years.com/2006/images/post/smile/default/smile.gif'},{code:'[s:226]',url:'https://www.g-years.com/2006/images/post/smile/default/10.gif'},{code:'[s:227]',url:'https://www.g-years.com/2006/images/post/smile/default/8.gif'},{code:'[s:228]',url:'https://www.g-years.com/2006/images/post/smile/default/sad.gif'},{code:'[s:229]',url:'https://www.g-years.com/2006/images/post/smile/default/question.gif'},{code:'[s:230]',url:'https://www.g-years.com/2006/images/post/smile/default/redface.gif'},{code:'[s:231]',url:'https://www.g-years.com/2006/images/post/smile/default/1.gif'},{code:'[s:232]',url:'https://www.g-years.com/2006/images/post/smile/default/13.gif'},{code:'[s:233]',url:'https://www.g-years.com/2006/images/post/smile/default/12.gif'},{code:'[s:234]',url:'https://www.g-years.com/2006/images/post/smile/default/6.gif'},{code:'[s:235]',url:'https://www.g-years.com/2006/images/post/smile/default/5.gif'},{code:'[s:247]',url:'https://www.g-years.com/2006/images/post/smile/default/7.gif'},{code:'[s:237]',url:'https://www.g-years.com/2006/images/post/smile/default/4.gif'},{code:'[s:238]',url:'https://www.g-years.com/2006/images/post/smile/default/cool.gif'},{code:'[s:239]',url:'https://www.g-years.com/2006/images/post/smile/default/wink.gif'},{code:'[s:240]',url:'https://www.g-years.com/2006/images/post/smile/default/14.gif'}],[{code:'[s:241]',url:'https://www.g-years.com/2006/images/post/smile/default/2.gif'},{code:'[s:242]',url:'https://www.g-years.com/2006/images/post/smile/default/mrgreen.gif'},{code:'[s:243]',url:'https://www.g-years.com/2006/images/post/smile/default/9.gif'},{code:'[s:244]',url:'https://www.g-years.com/2006/images/post/smile/default/11.gif'},{code:'[s:245]',url:'https://www.g-years.com/2006/images/post/smile/default/crazy.gif'},{code:'[s:246]',url:'https://www.g-years.com/2006/images/post/smile/default/3.gif'}]]}];
 
-let emojiTabIdx = 0;
-let emojiPageIdx = [0, 0, 0]; // current page per tab
-
-function toggleEmojiPanel(e){
-  e.stopPropagation();
-  const overlay = document.getElementById('emojiOverlay');
-  const isActive = overlay.classList.contains('active');
-  if(isActive){
-    overlay.classList.remove('active');
-  } else {
-    renderEmojiPanel();
-    overlay.classList.add('active');
-  }
-}
-
-function closeEmojiPanel(e){
-  if(e.target === document.getElementById('emojiOverlay')){
-    document.getElementById('emojiOverlay').classList.remove('active');
-  }
-}
-
-function switchEmojiTab(idx, btn, e){
-  if(e) e.stopPropagation();
-  emojiTabIdx = idx;
-  document.querySelectorAll('.emoji-tab').forEach((t,i)=>{
-    t.classList.toggle('active', i===idx);
-  });
-  renderEmojiGrid();
-}
-
-function switchEmojiPage(pageIdx, e){
-  if(e) e.stopPropagation();
-  emojiPageIdx[emojiTabIdx] = pageIdx;
-  renderEmojiGrid();
-}
-
-function renderEmojiPanel(){
-  renderEmojiGrid();
-}
-
-function renderEmojiGrid(){
-  const tab = emojiData[emojiTabIdx];
-  const pageIdx = emojiPageIdx[emojiTabIdx];
-  const page = tab.pages[pageIdx];
-
-  const pagesDiv = document.getElementById('emojiPages');
-  const paginDiv = document.getElementById('emojiPagination');
-
-  // Render grid
-  const gridHTML = page.map(item =>
-    `<button class="emoji-item" onclick="insertEmoji('${item.code}')" title="${item.code}">
-      <img src="${item.url}" loading="lazy" alt="${item.code}"
-        onerror="this.style.display='none';this.nextElementSibling.style.display='block'"
-      ><div class="emoji-code" style="display:none">${item.code}</div>
-    </button>`
-  ).join('');
-
-  pagesDiv.innerHTML = `<div class="emoji-page active"><div class="emoji-grid">${gridHTML}</div></div>`;
-
-  // Render pagination
-  const totalPages = tab.pages.length;
-  if(totalPages <= 1){
-    paginDiv.innerHTML = '';
-    return;
-  }
-  const btns = Array.from({length: totalPages}, (_,i) =>
-    `<button class="emoji-page-btn${i===pageIdx?' active':''}" onclick="event.stopPropagation();switchEmojiPage(${i})">${i+1}</button>`
-  ).join('');
-  paginDiv.innerHTML = btns;
-}
-
-function insertEmoji(code){
-  insertAtCursor(code);
-  document.getElementById('emojiOverlay').classList.remove('active');
-}
-
-// Close emoji panel when clicking elsewhere
-document.addEventListener('click', e=>{
-  const overlay = document.getElementById('emojiOverlay');
-  const trigger = document.getElementById('emojiBtnTrigger');
-  const panel = document.getElementById('emojiPanel');
-  if(overlay && overlay.classList.contains('active')){
-    // Close only if click is outside the panel AND outside the trigger button
-    if(panel && !panel.contains(e.target) && e.target !== trigger){
-      overlay.classList.remove('active');
-    }
-  }
-});
-
+let emojiTabIdx=0;
+let emojiPageIdx=[0,0,0];
+function toggleEmojiPanel(e){e.stopPropagation();const overlay=document.getElementById('emojiOverlay');const isActive=overlay.classList.contains('active');if(isActive){overlay.classList.remove('active');}else{renderEmojiPanel();overlay.classList.add('active');}}
+function closeEmojiPanel(e){if(e.target===document.getElementById('emojiOverlay')){document.getElementById('emojiOverlay').classList.remove('active');}}
+function switchEmojiTab(idx,btn,e){if(e)e.stopPropagation();emojiTabIdx=idx;document.querySelectorAll('.emoji-tab').forEach((t,i)=>{t.classList.toggle('active',i===idx);});renderEmojiGrid();}
+function switchEmojiPage(pageIdx,e){if(e)e.stopPropagation();emojiPageIdx[emojiTabIdx]=pageIdx;renderEmojiGrid();}
+function renderEmojiPanel(){renderEmojiGrid();}
+function renderEmojiGrid(){const tab=emojiData[emojiTabIdx];const pageIdx=emojiPageIdx[emojiTabIdx];const page=tab.pages[pageIdx];const pagesDiv=document.getElementById('emojiPages');const paginDiv=document.getElementById('emojiPagination');const gridHTML=page.map(item=>`<button class="emoji-item" onclick="insertEmoji('${item.code}')" title="${item.code}"><img src="${item.url}" loading="lazy" alt="${item.code}" onerror="this.style.display='none';this.nextElementSibling.style.display='block'"><div class="emoji-code" style="display:none">${item.code}</div></button>`).join('');pagesDiv.innerHTML=`<div class="emoji-page active"><div class="emoji-grid">${gridHTML}</div></div>`;const totalPages=tab.pages.length;if(totalPages<=1){paginDiv.innerHTML='';return;}const btns=Array.from({length:totalPages},(_,i)=>`<button class="emoji-page-btn${i===pageIdx?' active':''}" onclick="event.stopPropagation();switchEmojiPage(${i})">${i+1}</button>`).join('');paginDiv.innerHTML=btns;}
+function insertEmoji(code){insertAtCursor(code);document.getElementById('emojiOverlay').classList.remove('active');}
+document.addEventListener('click',e=>{const overlay=document.getElementById('emojiOverlay');const trigger=document.getElementById('emojiBtnTrigger');const panel=document.getElementById('emojiPanel');if(overlay&&overlay.classList.contains('active')){if(panel&&!panel.contains(e.target)&&e.target!==trigger){overlay.classList.remove('active');}}});
 </script>
 </body>
 </html>
