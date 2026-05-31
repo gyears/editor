@@ -284,6 +284,13 @@ textarea#editor.dragging{border:2px dashed var(--gold)!important;}
 #preview .xtable tr:nth-child(even) td{background:#fafafa;}
 #preview .media-ph{background:#f0f0f0;border:1px solid #ddd;border-radius:6px;padding:10px 14px;margin:6px 0;font-size:12px;color:#888;text-align:center;}
 #preview img.forum-img{max-width:100%;border-radius:4px;margin:4px 0;display:block;}
+#preview video.forum-img{max-width:100%;border-radius:6px;margin:4px 0;display:block;}
+#previewOverlayBody img.forum-img{max-width:100%;border-radius:4px;margin:4px 0;display:block;}
+#previewOverlayBody video.forum-img{max-width:100%;border-radius:6px;margin:4px 0;display:block;}
+@media (max-width:768px){
+  #preview img.forum-img,#previewOverlayBody img.forum-img{max-width:100%;max-height:60vw;width:auto;object-fit:contain;}
+  #preview video.forum-img,#previewOverlayBody video.forum-img{max-width:100%;max-height:60vw;}
+}
 #preview .yt-embed{width:100%;aspect-ratio:16/9;border-radius:6px;border:none;margin:6px 0;}
 @keyframes flyText{0%{transform:translateX(100%);}100%{transform:translateX(-100%);}}
 
@@ -291,7 +298,7 @@ textarea#editor.dragging{border:2px dashed var(--gold)!important;}
    MOBILE RESPONSIVE
 ══════════════════════════════════════════ */
 @media (max-width: 768px) {
-  /* ── 固定版面，不隨鍵盤縮放 ── */
+  /* ── 預設（合併模式）：固定版面 ── */
   body { height:100vh; overflow:hidden; }
   header { padding:7px 10px; gap:6px; flex-wrap:nowrap; overflow-x:auto; }
   header::-webkit-scrollbar{ display:none; }
@@ -300,11 +307,39 @@ textarea#editor.dragging{border:2px dashed var(--gold)!important;}
   .header-actions { gap:3px; flex-wrap:nowrap; flex-shrink:0; }
   .btn { padding:4px 8px; font-size:10px; white-space:nowrap; }
 
-  /* ── 主版面：固定高度 flex 直排 ── */
+  /* ── 主版面（合併模式）：固定高度 flex 直排 ── */
   .main {
     display:flex; flex-direction:column;
-    height:calc(100vh - 48px); /* 100vh 扣掉 header */
+    height:calc(100vh - 48px);
     overflow:hidden;
+  }
+
+  /* ── 分欄模式：整頁可捲動 ── */
+  body.split-mode { height:auto; overflow-y:auto; overflow-x:hidden; }
+  body.split-mode .main { height:auto; overflow:visible; flex-direction:column; }
+  /* textarea 固定 60vh，工具列正常顯示 */
+  body.split-mode .panel-mid { flex:none; height:auto; overflow:visible; }
+  body.split-mode textarea#editor {
+    height:60vh !important;
+    min-height:60vh !important;
+    flex:none;
+    overflow-y:auto;
+    -webkit-overflow-scrolling:touch;
+  }
+  /* 預覽區固定 60vh，在下方，可內部捲動 */
+  body.split-mode .panel-right {
+    display:flex !important;
+    flex-direction:column;
+    flex:none;
+    height:60vh;
+    min-height:60vh;
+    overflow:hidden;
+    border-top:2px solid var(--border);
+  }
+  body.split-mode #preview {
+    flex:1;
+    overflow-y:auto;
+    -webkit-overflow-scrolling:touch;
   }
 
   /* ── 左側面板：橫向捲動工具列 ── */
@@ -1115,32 +1150,43 @@ function toggleSplitMerge(){
   const isMobile=window.innerWidth<=768;
 
   if(isMerged){
-    // 合併模式：隱藏預覽欄
+    // 合併模式
     panelRight.style.display='none';
+    panelRight.style.flexDirection='';
+    panelRight.style.borderTop='';
     if(splitFloat)splitFloat.style.display='none';
     if(mergedFloat)mergedFloat.style.display='flex';
     if(!isMobile) main.style.gridTemplateColumns='240px 1fr';
     else main.style.gridTemplateColumns='1fr';
     splitBtn.textContent='分欄';
     previewBtn.style.display='';
+    // 手機：移除分欄 class，恢復固定版面
+    document.body.classList.remove('split-mode');
   } else {
-    // 分欄模式：顯示預覽欄
-    // 手機必須明確 display:flex，因為 CSS media 有 display:none
-    panelRight.style.display='flex';
-    panelRight.style.flexDirection='column';
-    panelRight.style.minHeight=isMobile?'40vh':'';
-    panelRight.style.borderTop=isMobile?'1px solid var(--border)':'';
+    // 分欄模式
     if(splitFloat)splitFloat.style.display='flex';
     if(mergedFloat)mergedFloat.style.display='none';
-    if(!isMobile) main.style.gridTemplateColumns='240px 1fr 1fr';
-    else {
-      // 手機分欄：編輯器與預覽上下各半
-      main.style.gridTemplateColumns='1fr';
-    }
     splitBtn.textContent='合併';
     previewBtn.style.display='none';
     const overlay=document.getElementById('previewOverlay');
     if(overlay)overlay.style.display='none';
+    if(!isMobile){
+      panelRight.style.display='flex';
+      panelRight.style.flexDirection='column';
+      panelRight.style.borderTop='';
+      main.style.gridTemplateColumns='240px 1fr 1fr';
+    } else {
+      // 手機：加 split-mode class，CSS 控制版面
+      document.body.classList.add('split-mode');
+      // 清除 inline style，讓 CSS class 接管
+      panelRight.style.display='';
+      panelRight.style.flexDirection='';
+      panelRight.style.minHeight='';
+      panelRight.style.maxHeight='';
+      panelRight.style.overflow='';
+      panelRight.style.borderTop='';
+      main.style.gridTemplateColumns='1fr';
+    }
   }
 }
 
