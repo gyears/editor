@@ -283,12 +283,15 @@ textarea#editor.dragging{border:2px dashed var(--gold)!important;}
 #preview .xtable td{border:1px solid #ddd;padding:7px 12px;color:#555;}
 #preview .xtable tr:nth-child(even) td{background:#fafafa;}
 #preview .media-ph{background:#f0f0f0;border:1px solid #ddd;border-radius:6px;padding:10px 14px;margin:6px 0;font-size:12px;color:#888;text-align:center;}
-#preview img.forum-img{max-width:100%;border-radius:4px;margin:4px 0;display:block;}
-#preview video.forum-img{max-width:100%;border-radius:6px;margin:4px 0;display:block;}
-#previewOverlayBody img.forum-img{max-width:100%;border-radius:4px;margin:4px 0;display:block;}
-#previewOverlayBody video.forum-img{max-width:100%;border-radius:6px;margin:4px 0;display:block;}
+#preview img.forum-img{max-width:70%;border-radius:4px;margin:4px 0;display:block;}
+#preview img.forum-img.ximg-img{max-width:91%;border-radius:4px;margin:4px auto;display:block;}
+#preview video.forum-img{max-width:70%;border-radius:6px;margin:4px 0;display:block;}
+#previewOverlayBody img.forum-img{max-width:70%;border-radius:4px;margin:4px 0;display:block;}
+#previewOverlayBody img.forum-img.ximg-img{max-width:91%;border-radius:4px;margin:4px auto;display:block;}
+#previewOverlayBody video.forum-img{max-width:70%;border-radius:6px;margin:4px 0;display:block;}
 @media (max-width:768px){
-  #preview img.forum-img,#previewOverlayBody img.forum-img{max-width:100%;max-height:60vw;width:auto;object-fit:contain;}
+  #preview img.forum-img,#previewOverlayBody img.forum-img{max-width:100%;max-height:60vw;width:auto;object-fit:contain;margin:4px 0;}
+  #preview img.forum-img.ximg-img,#previewOverlayBody img.forum-img.ximg-img{max-width:100%;max-height:78vw;width:auto;object-fit:contain;margin:4px auto;display:block;}
   #preview video.forum-img,#previewOverlayBody video.forum-img{max-width:100%;max-height:60vw;}
 }
 #preview .yt-embed{width:100%;aspect-ratio:16/9;border-radius:6px;border:none;margin:6px 0;}
@@ -1898,7 +1901,7 @@ function updatePreview(){
   h=h.replace(/\[hr\]/g,'<hr style="border:none;border-top:1px solid #ccc;margin:10px 0;opacity:.7;">');
   // url+img (Postimages)
   h=h.replace(/\[url=([^\]]+)\]\[img\]([\s\S]*?)\[\/img\]\[\/url\]/g,(_,href,src)=>`<a href="${href}" target="_blank"><img class="forum-img" src="${src.trim()}" onerror="this.style.display='none'"></a>`);
-  h=h.replace(/\[url=([^\]]+)\]\[ximg\]([\s\S]*?)\[\/ximg\]\[\/url\]/g,(_,href,src)=>`<a href="${href}" target="_blank"><img class="forum-img" src="${src.trim()}" onerror="this.style.display='none'"></a>`);
+  h=h.replace(/\[url=([^\]]+)\]\[ximg\]([\s\S]*?)\[\/ximg\]\[\/url\]/g,(_,href,src)=>`<a href="${href}" target="_blank"><img class="forum-img ximg-img" src="${src.trim()}" onerror="this.style.display='none'"></a>`);
   h=h.replace(/\[url\]([\s\S]*?)\[\/url\]/g,'<a href="$1" style="color:#3b82f6" target="_blank">$1</a>');
   h=h.replace(/\[url=([^\]]+)\]([\s\S]*?)\[\/url\]/g,'<a href="$1" style="color:#3b82f6" target="_blank">$2</a>');
   // xhr
@@ -1920,7 +1923,7 @@ function updatePreview(){
     ['xtag',c=>`<span class="xtag-pill">${c}</span>`],
     ['xrate',c=>`<span class="xrate-badge">★ ${c} / 10</span>`],
     ['xsmall',c=>`<span class="xsmall-text">${c}</span>`],
-    ['ximg',c=>`<img class="forum-img" src="${c}" onerror="this.style.display='none'">`],
+    ['ximg',c=>`<img class="forum-img ximg-img" src="${c}" onerror="this.style.display='none'">`],
     ['img',c=>`<img class="forum-img" src="${c}" onerror="this.style.display='none'">`],
     ['xmp4',c=>`<video class="forum-img" controls style="max-width:100%;border-radius:6px;margin:4px 0;"><source src="${c}" type="video/mp4">MP4: ${c}</video>`],
     ['xvmp4',c=>`<video class="forum-img" controls style="max-width:320px;border-radius:6px;margin:4px 0;"><source src="${c}" type="video/mp4">MP4: ${c}</video>`],
