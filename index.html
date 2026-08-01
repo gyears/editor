@@ -57,6 +57,7 @@ body.light-theme header{background:linear-gradient(135deg,#e8ecf5,#dde2f0);}
 .tag-btn .label{flex:1;}
 .tag-btn .code{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text2);background:var(--bg);padding:1px 5px;border-radius:3px;flex-shrink:0;}
 .tag-btn .wrap-hint{display:none;font-size:8px;color:var(--gold);flex-shrink:0;}
+.tag-btn .tag-hint{font-size:10px;color:#e06c75;flex-shrink:0;cursor:help;}
 body.has-selection .tag-btn.wrappable .wrap-hint{display:block;}
 body.has-selection .tag-btn.wrappable{border-left-color:rgba(240,180,41,.35);}
 body.has-selection .tag-btn.wrappable:hover{border-left-color:var(--gold);background:rgba(240,180,41,.06);}
@@ -1302,36 +1303,39 @@ const COLORS=['#000000','#ffffff','#ef4444','#f97316','#eab308','#22c55e','#3b82
    BUILD LEFT PANEL
 ═══════════════════════════════════════════ */
 function buildLeftPanel(){
+  const SYM_HINT=lang==='zh'?'⚠ 內容不可含 & = ` \' " ( ) + - / < > []':'⚠ No special chars: & = ` \' " ( ) + - / < > []';
+  const NOTE_HINT=lang==='zh'?'⚠ 僅限一行，不可含特殊符號':'⚠ One line only, no special chars';
+  const BTN_HINT=lang==='zh'?'⚠ URL不可含 & 符號':'⚠ URL cannot contain &';
   const panel=document.getElementById('leftPanel');
   panel.innerHTML='';
   const sections=[
     {key:'layout',title:lang==='zh'?'📐 基本排版':'📐 Layout',tags:[
       {tag:'xhr',icon:'➖',label:lang==='zh'?'金色分隔線':'Gold Divider',code:'xhr',simple:true},
-      {tag:'xgold',icon:'🏷',label:lang==='zh'?'章節標題':'Section Title',code:'xgold',wrap:true},
-      {tag:'xcenter',icon:'⬛',label:lang==='zh'?'置中標題':'Center Title',code:'xcenter',wrap:true},
-      {tag:'xgban',icon:'🟨',label:lang==='zh'?'金色橫幅':'Gold Banner',code:'xgban',wrap:true},
+      {tag:'xgold',icon:'🏷',label:lang==='zh'?'章節標題':'Section Title',code:'xgold',wrap:true,hint:SYM_HINT},
+      {tag:'xcenter',icon:'⬛',label:lang==='zh'?'置中標題':'Center Title',code:'xcenter',wrap:true,hint:SYM_HINT},
+      {tag:'xgban',icon:'🟨',label:lang==='zh'?'金色橫幅':'Gold Banner',code:'xgban',wrap:true,hint:SYM_HINT},
       {tag:'xsmall',icon:'🔡',label:lang==='zh'?'小字補充':'Small Text',code:'xsmall',wrap:true},
     ]},
     {key:'callout',title:lang==='zh'?'💡 提示框':'💡 Callouts',tags:[
-      {tag:'xnote',icon:'📌',label:lang==='zh'?'重點框（黃）':'Note (Yellow)',code:'xnote',wrap:true},
-      {tag:'xwarn',icon:'⚠️',label:lang==='zh'?'警告框（紅）':'Warning (Red)',code:'xwarn',wrap:true},
-      {tag:'xblue',icon:'🔵',label:lang==='zh'?'技術提示（藍）':'Info (Blue)',code:'xblue',wrap:true},
-      {tag:'xgreen',icon:'✅',label:lang==='zh'?'成功訊息（綠）':'Success (Green)',code:'xgreen',wrap:true},
-      {tag:'xred',icon:'🚫',label:lang==='zh'?'禁止事項（紅）':'Forbidden (Red)',code:'xred',wrap:true},
-      {tag:'xinfo',icon:'ℹ️',label:lang==='zh'?'蘋果藍資訊框':'Apple Blue Info',code:'xinfo',wrap:true},
-      {tag:'xgold',icon:'🏅',label:lang==='zh'?'金色標題條':'Gold Title',code:'xgold',wrap:true},
+      {tag:'xnote',icon:'📌',label:lang==='zh'?'重點框（黃）':'Note (Yellow)',code:'xnote',wrap:true,hint:NOTE_HINT},
+      {tag:'xwarn',icon:'⚠️',label:lang==='zh'?'警告框（紅）':'Warning (Red)',code:'xwarn',wrap:true,hint:SYM_HINT},
+      {tag:'xblue',icon:'🔵',label:lang==='zh'?'技術提示（藍）':'Info (Blue)',code:'xblue',wrap:true,hint:SYM_HINT},
+      {tag:'xgreen',icon:'✅',label:lang==='zh'?'成功訊息（綠）':'Success (Green)',code:'xgreen',wrap:true,hint:SYM_HINT},
+      {tag:'xred',icon:'🚫',label:lang==='zh'?'禁止事項（紅）':'Forbidden (Red)',code:'xred',wrap:true,hint:SYM_HINT},
+      {tag:'xinfo',icon:'ℹ️',label:lang==='zh'?'蘋果藍資訊框':'Apple Blue Info',code:'xinfo',wrap:true,hint:SYM_HINT},
+      {tag:'xgold',icon:'🏅',label:lang==='zh'?'金色標題條':'Gold Title',code:'xgold',wrap:true,hint:SYM_HINT},
       {tag:'xspoiler',icon:'🔽',label:lang==='zh'?'劇透文字':'Spoiler',code:'xspoiler',modal:true},
-      {tag:'xglass',icon:'🪟',label:lang==='zh'?'蘋果灰玻璃感':'Apple Glass',code:'xglass',wrap:true},
-      {tag:'xcard',icon:'🃏',label:lang==='zh'?'卡片':'Card',code:'xcard',modal:true},
+      {tag:'xglass',icon:'🪟',label:lang==='zh'?'蘋果灰玻璃感':'Apple Glass',code:'xglass',wrap:true,hint:SYM_HINT},
+      {tag:'xcard',icon:'🃏',label:lang==='zh'?'卡片':'Card',code:'xcard',modal:true,hint:SYM_HINT},
     ]},
     {key:'quote',title:lang==='zh'?'💬 引用':'💬 Quote',tags:[
-      {tag:'xquote',icon:'｜',label:lang==='zh'?'引用框 type1':'Quote type1',code:'xquote',wrap:true},
+      {tag:'xquote',icon:'｜',label:lang==='zh'?'引用框 type1':'Quote type1',code:'xquote',wrap:true,hint:SYM_HINT},
       {tag:'quote',icon:'「」',label:lang==='zh'?'引用框 type2':'Quote type2',code:'quote',wrap:true},
     ]},
     {key:'badge',title:lang==='zh'?'🏷 標籤與評分':'🏷 Tags & Rating',tags:[
-      {tag:'xtag',icon:'🔖',label:lang==='zh'?'標籤':'Tag',code:'xtag',wrap:true},
-      {tag:'xrate',icon:'⭐',label:lang==='zh'?'評分':'Rating',code:'xrate',modal:true},
-      {tag:'xbtn',icon:'🔘',label:lang==='zh'?'按鈕連結':'Button Link',code:'xbtn',modal:true},
+      {tag:'xtag',icon:'🔖',label:lang==='zh'?'標籤':'Tag',code:'xtag',wrap:true,hint:SYM_HINT},
+      {tag:'xrate',icon:'⭐',label:lang==='zh'?'評分':'Rating',code:'xrate',modal:true,hint:SYM_HINT},
+      {tag:'xbtn',icon:'🔘',label:lang==='zh'?'按鈕連結':'Button Link',code:'xbtn',modal:true,hint:BTN_HINT},
     ]},
     {key:'media',title:lang==='zh'?'🎬 多媒體':'🎬 Media',tags:[
       {tag:'xyoutube',icon:'▶️',label:'YouTube',code:'xyoutube',modal:true},
@@ -1375,6 +1379,7 @@ function buildLeftPanel(){
       const btn=document.createElement('button');
       btn.className='tag-btn'+(t_.wrap?' wrappable':'');
       btn.innerHTML=`<span class="icon">${t_.icon}</span><span class="label">${t_.label}</span><span class="code"${t_.gold?' style="color:var(--gold)"':''}>${t_.code}</span>${t_.wrap?'<span class="wrap-hint">▶包裹</span>':''}`;
+      if(t_.hint) btn.title=t_.hint;
       if(t_.simple){btn.onclick=()=>insertAtCursor('[xhr]x[/xhr]\n');}
       else if(t_.wrap){btn.onclick=()=>wrapOrModal(t_.tag);}
       else{btn.onclick=()=>openModal(t_.tag);}
@@ -1411,8 +1416,12 @@ function openModal(tag){
 
   let html='';
   switch(tag){
-    case 'xgold':case 'xcenter':case 'xgban':case 'xnote':case 'xwarn':case 'xblue':case 'xgreen':case 'xred':case 'xinfo':case 'xglass':
-      html=`<label>內容</label><input id="f1" value="${esc(selVal)}" placeholder="輸入內容">`;break;
+    case 'xgold':case 'xcenter':case 'xgban':case 'xwarn':case 'xblue':case 'xgreen':case 'xred':case 'xinfo':case 'xglass':
+      html=`<div style="font-size:11px;color:#e06c75;background:rgba(224,108,117,.08);border:1px solid rgba(224,108,117,.25);border-radius:6px;padding:7px 11px;margin-bottom:10px;">⚠️ 內容不可含有這些符號：<b style="font-family:'JetBrains Mono',monospace;">&amp; = \` ' " ( ) + - / &lt; &gt; [ ]</b>，否則語法失效。</div>
+      <label>內容</label><input id="f1" value="${esc(selVal)}" placeholder="輸入內容">`;break;
+    case 'xnote':
+      html=`<div style="font-size:11px;color:#e06c75;background:rgba(224,108,117,.08);border:1px solid rgba(224,108,117,.25);border-radius:6px;padding:7px 11px;margin-bottom:10px;">⚠️ 只能輸入一行文字，不能有第二行，否則語法失效。<br>內容不可含有這些符號：<b style="font-family:'JetBrains Mono',monospace;">&amp; = \` ' " ( ) + - / &lt; &gt; [ ]</b></div>
+      <label>內容（僅限一行）</label><input id="f1" value="${esc(selVal)}" placeholder="輸入一行文字">`;break;
     case 'xspoiler':
       html=`<div style="font-size:11px;color:var(--gold);background:rgba(240,180,41,0.08);border:1px solid rgba(240,180,41,0.25);border-radius:6px;padding:7px 11px;margin-bottom:10px;">💡 可隱藏劇透文字及圖片，影片及加密內容無法使用</div>
       <label>按鈕文字（點擊後展開）</label><input id="f1" placeholder="例：點我查看" value="點我查看">
@@ -1420,15 +1429,20 @@ function openModal(tag){
     case 'xsmall':
       html=`<label>小字補充內容</label><input id="f1" value="${esc(selVal)}" placeholder="例：資料來源：會員自行整理，僅供參考。">`;break;
     case 'xcard':
-      html=`<label>卡片標題</label><input id="f1" placeholder="例：推薦作品"><label>卡片內容</label><textarea id="f2">${esc(selVal)}</textarea>`;break;
+      html=`<div style="font-size:11px;color:#e06c75;background:rgba(224,108,117,.08);border:1px solid rgba(224,108,117,.25);border-radius:6px;padding:7px 11px;margin-bottom:10px;">⚠️ 標題與內容不可含有這些符號：<b style="font-family:'JetBrains Mono',monospace;">&amp; = \` ' " ( ) + - / &lt; &gt; [ ]</b>，否則語法失效。</div>
+      <label>卡片標題</label><input id="f1" placeholder="例：推薦作品"><label>卡片內容</label><textarea id="f2">${esc(selVal)}</textarea>`;break;
     case 'quote':case 'xquote':
-      html=`<label>引用內容</label><textarea id="f1">${esc(selVal)}</textarea>`;break;
+      html=`<div style="font-size:11px;color:#e06c75;background:rgba(224,108,117,.08);border:1px solid rgba(224,108,117,.25);border-radius:6px;padding:7px 11px;margin-bottom:10px;">⚠️ 內容不可含有這些符號：<b style="font-family:'JetBrains Mono',monospace;">&amp; = \` ' " ( ) + - / &lt; &gt; [ ]</b>，否則語法失效。</div>
+      <label>引用內容</label><textarea id="f1">${esc(selVal)}</textarea>`;break;
     case 'xtag':
-      html=`<label>標籤名稱</label><input id="f1" value="${esc(selVal)}" placeholder="例：咖啡">`;break;
+      html=`<div style="font-size:11px;color:#e06c75;background:rgba(224,108,117,.08);border:1px solid rgba(224,108,117,.25);border-radius:6px;padding:7px 11px;margin-bottom:10px;">⚠️ 內容不可含有這些符號：<b style="font-family:'JetBrains Mono',monospace;">&amp; = \` ' " ( ) + - / &lt; &gt; [ ]</b>，否則語法失效。</div>
+      <label>標籤名稱</label><input id="f1" value="${esc(selVal)}" placeholder="例：咖啡">`;break;
     case 'xrate':
-      html=`<label>分數（0~10）</label><input id="f1" type="number" min="0" max="10" step="0.1" placeholder="8.7">`;break;
+      html=`<div style="font-size:11px;color:#e06c75;background:rgba(224,108,117,.08);border:1px solid rgba(224,108,117,.25);border-radius:6px;padding:7px 11px;margin-bottom:10px;">⚠️ 內容不可含有這些符號：<b style="font-family:'JetBrains Mono',monospace;">&amp; = \` ' " ( ) + - / &lt; &gt; [ ]</b>，否則語法失效。</div>
+      <label>分數（0~10）</label><input id="f1" type="number" min="0" max="10" step="0.1" placeholder="8.7">`;break;
     case 'xbtn':
-      html=`<label>URL（不可含 & 符號）</label><input id="f1" placeholder="https://example.com"><label>按鈕文字</label><input id="f2" value="${esc(selVal)}" placeholder="點我查看">`;break;
+      html=`<div style="font-size:11px;color:#e06c75;background:rgba(224,108,117,.08);border:1px solid rgba(224,108,117,.25);border-radius:6px;padding:7px 11px;margin-bottom:10px;">⚠️ URL 不可包含 <b style="font-family:'JetBrains Mono',monospace;">&amp;</b> 符號，否則語法失效。</div>
+      <label>URL（不可含 &amp; 符號）</label><input id="f1" placeholder="https://example.com"><label>按鈕文字</label><input id="f2" value="${esc(selVal)}" placeholder="點我查看">`;break;
     case 'xyoutube':case 'xsyoutube':
       html=`<label>貼上 YouTube 網址或影片 ID</label><input id="f1" placeholder="https://youtu.be/xxxxx 或 11碼ID" oninput="prevYT('${tag}')">
       <div id="ytPrev" style="margin-top:6px;font-size:11px;min-height:14px;font-family:'JetBrains Mono',monospace;color:#22c55e;word-break:break-all;"></div>
@@ -1923,22 +1937,28 @@ function updatePreview(){
   h=h.replace(/\[url=([^\]]+)\]([\s\S]*?)\[\/url\]/g,'<a href="$1" style="color:#3b82f6" target="_blank">$2</a>');
   // xhr
   h=h.replace(/\[xhr\]x\[\/xhr\]/g,'<hr class="xhr-line">');
+  // 禁止符號檢查（模擬論壇失效行為）
+  const FORBIDDEN=/[&=`'"()+\-\/<>\[\]]/;
+  const hasForbidden=str=>FORBIDDEN.test(str);
+  // 失效時原樣輸出（還原 HTML entity 回原始字元供顯示）
+  const failRaw=(tag,raw)=>`[${tag}]${raw}[/${tag}]`;
+  const failRawAttr=(tag,attr,raw)=>`[${tag}=${attr}]${raw}[/${tag}]`;
   // block map
   const bm=[
-    ['xgold',c=>`<div class="xgold-box">${c}</div>`],
-    ['xcenter',c=>`<div class="xcenter-box">${c}</div>`],
-    ['xgban',c=>`<div class="xgban-box">${c}</div>`],
-    ['xnote',c=>`<div class="xnote-box">${c}</div>`],
-    ['xwarn',c=>`<div class="xwarn-box">${c}</div>`],
-    ['xblue',c=>`<div class="xblue-box">${c}</div>`],
-    ['xgreen',c=>`<div class="xgreen-box">${c}</div>`],
-    ['xred',c=>`<div class="xred-box">${c}</div>`],
-    ['xinfo',c=>`<div class="xinfo-box">${c}</div>`],
-    ['xglass',c=>`<div class="xglass-box">${c}</div>`],
-    ['xquote',c=>`<div class="xquote-box">${c}</div>`],
+    ['xgold',c=>hasForbidden(c)?failRaw('xgold',c):`<div class="xgold-box">${c}</div>`],
+    ['xcenter',c=>hasForbidden(c)?failRaw('xcenter',c):`<div class="xcenter-box">${c}</div>`],
+    ['xgban',c=>hasForbidden(c)?failRaw('xgban',c):`<div class="xgban-box">${c}</div>`],
+    ['xnote',c=>(hasForbidden(c)||c.includes('\n'))?failRaw('xnote',c):`<div class="xnote-box">${c}</div>`],
+    ['xwarn',c=>hasForbidden(c)?failRaw('xwarn',c):`<div class="xwarn-box">${c}</div>`],
+    ['xblue',c=>hasForbidden(c)?failRaw('xblue',c):`<div class="xblue-box">${c}</div>`],
+    ['xgreen',c=>hasForbidden(c)?failRaw('xgreen',c):`<div class="xgreen-box">${c}</div>`],
+    ['xred',c=>hasForbidden(c)?failRaw('xred',c):`<div class="xred-box">${c}</div>`],
+    ['xinfo',c=>hasForbidden(c)?failRaw('xinfo',c):`<div class="xinfo-box">${c}</div>`],
+    ['xglass',c=>hasForbidden(c)?failRaw('xglass',c):`<div class="xglass-box">${c}</div>`],
+    ['xquote',c=>hasForbidden(c)?failRaw('xquote',c):`<div class="xquote-box">${c}</div>`],
     ['quote',c=>`<div class="quote-box">${c}</div>`],
-    ['xtag',c=>`<span class="xtag-pill">${c}</span>`],
-    ['xrate',c=>`<span class="xrate-badge">★ ${c} / 10</span>`],
+    ['xtag',c=>hasForbidden(c)?failRaw('xtag',c):`<span class="xtag-pill">${c}</span>`],
+    ['xrate',c=>hasForbidden(c)?failRaw('xrate',c):`<span class="xrate-badge">★ ${c} / 10</span>`],
     ['xsmall',c=>`<span class="xsmall-text">${c}</span>`],
     ['ximg',c=>`<img class="forum-img ximg-img" src="${c}" onerror="this.style.display='none'">`],
     ['img',c=>`<img class="forum-img" src="${c}" onerror="this.style.display='none'">`],
@@ -1962,9 +1982,15 @@ function updatePreview(){
   // xspoiler
   h=h.replace(/\[xspoiler=([^\]]+)\]([\s\S]*?)\[\/xspoiler\]/g,(_,btn,body)=>{const id='sp'+Math.random().toString(36).slice(2,7);return `<div class="xspoiler-wrap"><div id="${id}_btn" onclick="(function(){var b=document.getElementById('${id}_body'),a=document.getElementById('${id}_btn');var open=b.style.display!=='none';b.style.display=open?'none':'block';a.innerHTML=(open?'▶ ':'▼ ')+'${btn.replace(/'/g,"\\'")}';})();" style="cursor:pointer;display:flex;align-items:center;gap:6px;padding:7px 12px;background:#f0f0f0;border:1px solid #ddd;border-radius:5px;font-size:13px;user-select:none;">▶ ${btn}</div><div id="${id}_body" style="display:none;padding:10px 14px;background:#fafafa;border:1px solid #ddd;border-top:none;border-radius:0 0 5px 5px;font-size:13px;color:#333;">${body.trim()}</div></div>`;});
   // xcard
-  h=h.replace(/\[xcard=([^\]]+)\]([\s\S]*?)\[\/xcard\]/g,(_,t_,b)=>`<div class="xcard-box"><div class="xcard-title">${t_}</div><div class="xcard-body">${b.trim()}</div></div>`);
+  h=h.replace(/\[xcard=([^\]]+)\]([\s\S]*?)\[\/xcard\]/g,(_,t_,b)=>{
+    if(hasForbidden(t_)||hasForbidden(b.trim()))return failRawAttr('xcard',t_,b.trim());
+    return `<div class="xcard-box"><div class="xcard-title">${t_}</div><div class="xcard-body">${b.trim()}</div></div>`;
+  });
   // xbtn
-  h=h.replace(/\[xbtn=([^\]]+)\]([\s\S]*?)\[\/xbtn\]/g,(_,url,text)=>`<a class="xbtn-link" href="${url}" target="_blank">${text.trim()}</a>`);
+  h=h.replace(/\[xbtn=([^\]]+)\]([\s\S]*?)\[\/xbtn\]/g,(_,url,text)=>{
+    if(/&/.test(url))return failRawAttr('xbtn',url,text.trim());
+    return `<a class="xbtn-link" href="${url}" target="_blank">${text.trim()}</a>`;
+  });
   // dialog
   h=h.replace(/\[xleft\]([\s\S]*?)\[\/xleft\]/g,(_,c)=>`<div class="xleft-bubble"><span>${c.trim()}</span></div>`);
   h=h.replace(/\[xright\]([\s\S]*?)\[\/xright\]/g,(_,c)=>`<div class="xright-bubble"><span>${c.trim()}</span></div>`);
