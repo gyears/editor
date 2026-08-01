@@ -1423,11 +1423,12 @@ function openModal(tag){
       html=`<div style="font-size:11px;color:#e06c75;background:rgba(224,108,117,.08);border:1px solid rgba(224,108,117,.25);border-radius:6px;padding:7px 11px;margin-bottom:10px;">⚠️ 只能輸入一行文字，不能有第二行，否則語法失效。<br>內容不可含有這些符號：<b style="font-family:'JetBrains Mono',monospace;">&amp; = \` ' " ( ) + - / &lt; &gt; [ ]</b></div>
       <label>內容（僅限一行）</label><input id="f1" value="${esc(selVal)}" placeholder="輸入一行文字">`;break;
     case 'xspoiler':
-      html=`<div style="font-size:11px;color:var(--gold);background:rgba(240,180,41,0.08);border:1px solid rgba(240,180,41,0.25);border-radius:6px;padding:7px 11px;margin-bottom:10px;">💡 可隱藏劇透文字及圖片，影片及加密內容無法使用</div>
+      html=`<div style="font-size:11px;color:#e06c75;background:rgba(224,108,117,.08);border:1px solid rgba(224,108,117,.25);border-radius:6px;padding:7px 11px;margin-bottom:10px;">⚠️ 按鈕文字與內容不可含有這些符號：<b style="font-family:'JetBrains Mono',monospace;">&amp; = \` ' " ( ) + - / &lt; &gt; [ ]</b>，否則語法失效。</div>
       <label>按鈕文字（點擊後展開）</label><input id="f1" placeholder="例：點我查看" value="點我查看">
       <label>劇透內容（文字或圖片BBCode）</label><textarea id="f2">${esc(selVal)}</textarea>`;break;
     case 'xsmall':
-      html=`<label>小字補充內容</label><input id="f1" value="${esc(selVal)}" placeholder="例：資料來源：會員自行整理，僅供參考。">`;break;
+      html=`<div style="font-size:11px;color:#e06c75;background:rgba(224,108,117,.08);border:1px solid rgba(224,108,117,.25);border-radius:6px;padding:7px 11px;margin-bottom:10px;">⚠️ 內容不可含有這些符號：<b style="font-family:'JetBrains Mono',monospace;">&amp; = \` ' " ( ) + - / &lt; &gt; [ ]</b>，否則語法失效。</div>
+      <label>小字補充內容</label><input id="f1" value="${esc(selVal)}" placeholder="例：資料來源：會員自行整理，僅供參考。">`;break;
     case 'xcard':
       html=`<div style="font-size:11px;color:#e06c75;background:rgba(224,108,117,.08);border:1px solid rgba(224,108,117,.25);border-radius:6px;padding:7px 11px;margin-bottom:10px;">⚠️ 標題與內容不可含有這些符號：<b style="font-family:'JetBrains Mono',monospace;">&amp; = \` ' " ( ) + - / &lt; &gt; [ ]</b>，否則語法失效。</div>
       <label>卡片標題</label><input id="f1" placeholder="例：推薦作品"><label>卡片內容</label><textarea id="f2">${esc(selVal)}</textarea>`;break;
@@ -1959,7 +1960,7 @@ function updatePreview(){
     ['quote',c=>`<div class="quote-box">${c}</div>`],
     ['xtag',c=>hasForbidden(c)?failRaw('xtag',c):`<span class="xtag-pill">${c}</span>`],
     ['xrate',c=>hasForbidden(c)?failRaw('xrate',c):`<span class="xrate-badge">★ ${c} / 10</span>`],
-    ['xsmall',c=>`<span class="xsmall-text">${c}</span>`],
+    ['xsmall',c=>hasForbidden(c)?failRaw('xsmall',c):`<span class="xsmall-text">${c}</span>`],
     ['ximg',c=>`<img class="forum-img ximg-img" src="${c}" onerror="this.style.display='none'">`],
     ['img',c=>`<img class="forum-img" src="${c}" onerror="this.style.display='none'">`],
     ['xmp4',c=>`<video class="forum-img" controls style="max-width:100%;border-radius:6px;margin:4px 0;"><source src="${c}" type="video/mp4">MP4: ${c}</video>`],
@@ -1980,7 +1981,11 @@ function updatePreview(){
   // Sendvid
   h=h.replace(/\[xsendvid\]([\s\S]*?)\[\/xsendvid\]/g,(_,id)=>`<iframe src="https://sendvid.com/embed/${id.trim()}" style="width:100%;aspect-ratio:16/9;border-radius:6px;border:none;margin:6px 0;display:block;" allowfullscreen loading="lazy"></iframe>`);
   // xspoiler
-  h=h.replace(/\[xspoiler=([^\]]+)\]([\s\S]*?)\[\/xspoiler\]/g,(_,btn,body)=>{const id='sp'+Math.random().toString(36).slice(2,7);return `<div class="xspoiler-wrap"><div id="${id}_btn" onclick="(function(){var b=document.getElementById('${id}_body'),a=document.getElementById('${id}_btn');var open=b.style.display!=='none';b.style.display=open?'none':'block';a.innerHTML=(open?'▶ ':'▼ ')+'${btn.replace(/'/g,"\\'")}';})();" style="cursor:pointer;display:flex;align-items:center;gap:6px;padding:7px 12px;background:#f0f0f0;border:1px solid #ddd;border-radius:5px;font-size:13px;user-select:none;">▶ ${btn}</div><div id="${id}_body" style="display:none;padding:10px 14px;background:#fafafa;border:1px solid #ddd;border-top:none;border-radius:0 0 5px 5px;font-size:13px;color:#333;">${body.trim()}</div></div>`;});
+  h=h.replace(/\[xspoiler=([^\]]+)\]([\s\S]*?)\[\/xspoiler\]/g,(_,btn,body)=>{
+    if(hasForbidden(btn)||hasForbidden(body.trim()))return failRawAttr('xspoiler',btn,body.trim());
+    const id='sp'+Math.random().toString(36).slice(2,7);
+    return `<div class="xspoiler-wrap"><div id="${id}_btn" onclick="(function(){var b=document.getElementById('${id}_body'),a=document.getElementById('${id}_btn');var open=b.style.display!=='none';b.style.display=open?'none':'block';a.innerHTML=(open?'▶ ':'▼ ')+'${btn.replace(/'/g,"\\'")}';})();" style="cursor:pointer;display:flex;align-items:center;gap:6px;padding:7px 12px;background:#f0f0f0;border:1px solid #ddd;border-radius:5px;font-size:13px;user-select:none;">▶ ${btn}</div><div id="${id}_body" style="display:none;padding:10px 14px;background:#fafafa;border:1px solid #ddd;border-top:none;border-radius:0 0 5px 5px;font-size:13px;color:#333;">${body.trim()}</div></div>`;
+  });
   // xcard
   h=h.replace(/\[xcard=([^\]]+)\]([\s\S]*?)\[\/xcard\]/g,(_,t_,b)=>{
     if(hasForbidden(t_)||hasForbidden(b.trim()))return failRawAttr('xcard',t_,b.trim());
