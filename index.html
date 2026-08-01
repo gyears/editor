@@ -1123,7 +1123,7 @@ function updateStats(){
   const imgCount=(v.match(/\[ximg\]|\[img\]|\[url=[^\]]+\]\[img\]/g)||[]).length;
   // Count videos (mp4, youtube, tiktok, sendvid, vmp4)
   const vidCount=(v.match(/\[xmp4\]|\[xvmp4\]|\[xyoutube\]|\[xsyoutube\]|\[xtiktok\]|\[xsendvid\]/g)||[]).length;
-  document.getElementById('charCount').textContent=`文字：${cjk}字`;
+  document.getElementById('charCount').textContent=`中文字數：${cjk}字`;
   document.getElementById('imgCount').textContent=`圖片：${imgCount}`;
   document.getElementById('vidCount').textContent=`影片：${vidCount}`;
 }
