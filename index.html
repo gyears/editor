@@ -286,7 +286,8 @@ textarea#editor.dragging{border:2px dashed var(--gold)!important;}
 #preview .xcard-body{padding:10px 14px;font-size:13px;color:#555;}
 #preview .xtag-pill{display:inline-block;background:#e8f0fe;color:#1a56db;border:1px solid #c7d7fc;border-radius:20px;padding:2px 10px;font-size:12px;margin:2px;}
 #preview .xrate-badge{display:inline-flex;align-items:center;gap:4px;background:#fff9e6;border:1px solid #f0d060;border-radius:20px;padding:3px 10px;font-size:12px;color:#8a6000;font-weight:600;}
-#preview .xbtn-link{display:inline-block;background:#f0f0f0;border:1px solid #ccc;border-radius:6px;padding:5px 14px;font-size:13px;color:#333;text-decoration:none;margin:4px 0;}
+#preview .xbtn-link{display:inline-block;background:linear-gradient(180deg,#ff80b0,#f0508a);border:none;border-radius:8px;padding:8px 22px;font-size:13px;font-weight:600;color:#fff;text-decoration:none;margin:4px 0;box-shadow:0 2px 6px rgba(220,60,120,.3),inset 0 1px 0 rgba(255,255,255,.3);transition:opacity .15s;}
+#preview .xbtn-link:hover{opacity:.85;}
 #preview .quote-box{border:1px solid #ddd;border-radius:4px;background:#f9f9f9;padding:10px 14px;margin:8px 0;color:#555;font-size:13px;}
 #preview .xquote-box{border-left:3px solid #ccc;padding:4px 14px;margin:8px 0;color:#666;font-size:13px;font-style:italic;}
 #preview .hide-box{background:#fff8e1;border:1px dashed #f0c040;border-radius:4px;padding:10px 14px;margin:8px 0;color:#888;font-size:12px;text-align:center;}
@@ -301,20 +302,20 @@ textarea#editor.dragging{border:2px dashed var(--gold)!important;}
 #preview .xtable tr:nth-child(even) td{background:#fafafa;}
 #preview .media-ph{background:#f0f0f0;border:1px solid #ddd;border-radius:6px;padding:10px 14px;margin:6px 0;font-size:12px;color:#888;text-align:center;}
 #preview img.forum-img{max-width:70%;border-radius:4px;margin:4px 0;display:block;}
-#preview img.forum-img.ximg-img{max-width:91%;border-radius:4px;margin:4px auto;display:block;}
-#preview img.forum-img.ovimg-img{max-width:91%;border-radius:4px;margin:4px 0;display:block;}
-#preview img.forum-img.oimg-img{max-width:91%;border-radius:4px;margin:4px 0;display:block;}
+#preview img.forum-img.ximg-img{max-width:91%;border-radius:4px;margin:4px auto;display:block;border:8px solid #fff;box-shadow:0 1px 6px rgba(0,0,0,.18);}
+#preview img.forum-img.ovimg-img{max-width:91%;border-radius:4px;margin:4px 0;display:block;border:8px solid #fff;box-shadow:0 1px 6px rgba(0,0,0,.18);}
+#preview img.forum-img.oimg-img{max-width:91%;border-radius:4px;margin:4px 0;display:block;border:8px solid #fff;box-shadow:0 1px 6px rgba(0,0,0,.18);}
 #preview video.forum-img{max-width:70%;border-radius:6px;margin:4px 0;display:block;}
 #previewOverlayBody img.forum-img{max-width:70%;border-radius:4px;margin:4px 0;display:block;}
-#previewOverlayBody img.forum-img.ximg-img{max-width:91%;border-radius:4px;margin:4px auto;display:block;}
-#previewOverlayBody img.forum-img.ovimg-img{max-width:91%;border-radius:4px;margin:4px 0;display:block;}
-#previewOverlayBody img.forum-img.oimg-img{max-width:91%;border-radius:4px;margin:4px 0;display:block;}
+#previewOverlayBody img.forum-img.ximg-img{max-width:91%;border-radius:4px;margin:4px auto;display:block;border:8px solid #fff;box-shadow:0 1px 6px rgba(0,0,0,.18);}
+#previewOverlayBody img.forum-img.ovimg-img{max-width:91%;border-radius:4px;margin:4px 0;display:block;border:8px solid #fff;box-shadow:0 1px 6px rgba(0,0,0,.18);}
+#previewOverlayBody img.forum-img.oimg-img{max-width:91%;border-radius:4px;margin:4px 0;display:block;border:8px solid #fff;box-shadow:0 1px 6px rgba(0,0,0,.18);}
 #previewOverlayBody video.forum-img{max-width:70%;border-radius:6px;margin:4px 0;display:block;}
 @media (max-width:768px){
   #preview img.forum-img,#previewOverlayBody img.forum-img{max-width:100%;max-height:60vw;width:auto;object-fit:contain;margin:4px 0;}
-  #preview img.forum-img.ximg-img,#previewOverlayBody img.forum-img.ximg-img{max-width:100%;max-height:78vw;width:auto;object-fit:contain;margin:4px auto;display:block;}
+  #preview img.forum-img.ximg-img,#previewOverlayBody img.forum-img.ximg-img{max-width:100%;max-height:78vw;width:auto;object-fit:contain;margin:4px auto;display:block;border:6px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.15);}
   #preview img.forum-img.ovimg-img,#previewOverlayBody img.forum-img.ovimg-img,
-  #preview img.forum-img.oimg-img,#previewOverlayBody img.forum-img.oimg-img{max-width:100%;max-height:78vw;width:auto;object-fit:contain;margin:4px 0;display:block;}
+  #preview img.forum-img.oimg-img,#previewOverlayBody img.forum-img.oimg-img{max-width:100%;max-height:78vw;width:auto;object-fit:contain;margin:4px 0;display:block;border:6px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.15);}
   #preview video.forum-img,#previewOverlayBody video.forum-img{max-width:100%;max-height:60vw;}
 }
 #preview .yt-embed{width:100%;aspect-ratio:16/9;border-radius:6px;border:none;margin:6px 0;}
@@ -1482,10 +1483,11 @@ function openModal(tag){
       html=`
       <div style="display:flex;gap:0;margin-bottom:12px;border-radius:8px;overflow:hidden;border:1px solid var(--border);">
         <button id="ximgT1" onclick="ximgSetType('ximg')" style="flex:1;padding:7px 4px;border:none;cursor:pointer;font-family:inherit;font-size:11px;font-weight:700;background:var(--gold);color:#000;transition:all .15s;">🖼 置中大圖<br><span style="font-size:9px;opacity:.7;">[ximg]</span></button>
-        <button id="ximgT2" onclick="ximgSetType('ovimg')" style="flex:1;padding:7px 4px;border:none;cursor:pointer;font-family:inherit;font-size:11px;font-weight:600;background:var(--surface2);color:var(--text2);transition:all .15s;">🎞 靠左GIF<br><span style="font-size:9px;opacity:.7;">[ovimg]</span></button>
+        <button id="ximgT2" onclick="ximgSetType('ovimg')" style="flex:1;padding:7px 4px;border:none;cursor:pointer;font-family:inherit;font-size:11px;font-weight:600;background:var(--surface2);color:var(--text2);transition:all .15s;">🎞 靠左大圖(GIF)<br><span style="font-size:9px;opacity:.7;">[ovimg]</span></button>
         <button id="ximgT3" onclick="ximgSetType('oimg')" style="flex:1;padding:7px 4px;border:none;cursor:pointer;font-family:inherit;font-size:11px;font-weight:600;background:var(--surface2);color:var(--text2);transition:all .15s;">🖼 靠左大圖<br><span style="font-size:9px;opacity:.7;">[oimg]</span></button>
       </div>
       <label>圖片連結網址</label>
+      <div style="font-size:10px;color:var(--text2);margin-bottom:4px;">💡 使用 Postimages 請選擇「<b>直接鏈接</b>」格式</div>
       <input id="f1" placeholder="https://i.postimg.cc/xxx/image.jpg" oninput="prevImg()">
       <div id="imgPrev" style="margin-top:8px;"></div>`;
       setTimeout(()=>{ window._ximgType='ximg'; },30);
