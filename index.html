@@ -302,13 +302,19 @@ textarea#editor.dragging{border:2px dashed var(--gold)!important;}
 #preview .media-ph{background:#f0f0f0;border:1px solid #ddd;border-radius:6px;padding:10px 14px;margin:6px 0;font-size:12px;color:#888;text-align:center;}
 #preview img.forum-img{max-width:70%;border-radius:4px;margin:4px 0;display:block;}
 #preview img.forum-img.ximg-img{max-width:91%;border-radius:4px;margin:4px auto;display:block;}
+#preview img.forum-img.ovimg-img{max-width:91%;border-radius:4px;margin:4px 0;display:block;}
+#preview img.forum-img.oimg-img{max-width:91%;border-radius:4px;margin:4px 0;display:block;}
 #preview video.forum-img{max-width:70%;border-radius:6px;margin:4px 0;display:block;}
 #previewOverlayBody img.forum-img{max-width:70%;border-radius:4px;margin:4px 0;display:block;}
 #previewOverlayBody img.forum-img.ximg-img{max-width:91%;border-radius:4px;margin:4px auto;display:block;}
+#previewOverlayBody img.forum-img.ovimg-img{max-width:91%;border-radius:4px;margin:4px 0;display:block;}
+#previewOverlayBody img.forum-img.oimg-img{max-width:91%;border-radius:4px;margin:4px 0;display:block;}
 #previewOverlayBody video.forum-img{max-width:70%;border-radius:6px;margin:4px 0;display:block;}
 @media (max-width:768px){
   #preview img.forum-img,#previewOverlayBody img.forum-img{max-width:100%;max-height:60vw;width:auto;object-fit:contain;margin:4px 0;}
   #preview img.forum-img.ximg-img,#previewOverlayBody img.forum-img.ximg-img{max-width:100%;max-height:78vw;width:auto;object-fit:contain;margin:4px auto;display:block;}
+  #preview img.forum-img.ovimg-img,#previewOverlayBody img.forum-img.ovimg-img,
+  #preview img.forum-img.oimg-img,#previewOverlayBody img.forum-img.oimg-img{max-width:100%;max-height:78vw;width:auto;object-fit:contain;margin:4px 0;display:block;}
   #preview video.forum-img,#previewOverlayBody video.forum-img{max-width:100%;max-height:60vw;}
 }
 #preview .yt-embed{width:100%;aspect-ratio:16/9;border-radius:6px;border:none;margin:6px 0;}
@@ -937,7 +943,7 @@ let lastWasCut=false;
 const AUTO_CLOSE_TAGS=[
   'b','i','u','strike','xgold','xcenter','xgban','xnote','xwarn',
   'xblue','xgreen','xred','xinfo','xglass','xsmall','xquote','quote',
-  'xtag','xrate','xbtn','xspoiler','xcard','ximg','xmp4','xvmp4',
+  'xtag','xrate','xbtn','xspoiler','xcard','ximg','ovimg','oimg','xmp4','xvmp4',
   'xmp3','xsound','xsendvid','xmap','xmaplink','xyoutube','xsyoutube',
   'xtiktok','hide','sell','fly','move','code','url',
   'size','color','backcolor','align','xleft','xright',
@@ -1121,7 +1127,7 @@ function updateStats(){
   // Count CJK chars only
   const cjk=(stripped.match(/[\u4e00-\u9fff\u3400-\u4dbf\uf900-\ufaff]/g)||[]).length;
   // Count images
-  const imgCount=(v.match(/\[ximg\]|\[img\]|\[url=[^\]]+\]\[img\]/g)||[]).length;
+  const imgCount=(v.match(/\[ximg\]|\[ovimg\]|\[oimg\]|\[img\]|\[url=[^\]]+\]\[img\]/g)||[]).length;
   // Count videos (mp4, youtube, tiktok, sendvid, vmp4)
   const vidCount=(v.match(/\[xmp4\]|\[xvmp4\]|\[xyoutube\]|\[xsyoutube\]|\[xtiktok\]|\[xsendvid\]/g)||[]).length;
   document.getElementById('charCount').textContent=`中文字數：${cjk}字`;
@@ -1473,8 +1479,17 @@ function openModal(tag){
       html=`<label>地點名稱</label><input id="f1" placeholder="例：台北 101">
       <div style="margin-top:6px;font-size:11px;color:var(--text2);">輸入地點名稱，論壇會自動連結至 Google Maps 搜尋。</div>`;break;
     case 'ximg':
-      html=`<label>圖片連結網址</label><input id="f1" placeholder="https://i.postimg.cc/xxx/image.jpg" oninput="prevImg()">
-      <div id="imgPrev" style="margin-top:8px;"></div>`;break;
+      html=`
+      <div style="display:flex;gap:0;margin-bottom:12px;border-radius:8px;overflow:hidden;border:1px solid var(--border);">
+        <button id="ximgT1" onclick="ximgSetType('ximg')" style="flex:1;padding:7px 4px;border:none;cursor:pointer;font-family:inherit;font-size:11px;font-weight:700;background:var(--gold);color:#000;transition:all .15s;">🖼 置中大圖<br><span style="font-size:9px;opacity:.7;">[ximg]</span></button>
+        <button id="ximgT2" onclick="ximgSetType('ovimg')" style="flex:1;padding:7px 4px;border:none;cursor:pointer;font-family:inherit;font-size:11px;font-weight:600;background:var(--surface2);color:var(--text2);transition:all .15s;">🎞 靠左GIF<br><span style="font-size:9px;opacity:.7;">[ovimg]</span></button>
+        <button id="ximgT3" onclick="ximgSetType('oimg')" style="flex:1;padding:7px 4px;border:none;cursor:pointer;font-family:inherit;font-size:11px;font-weight:600;background:var(--surface2);color:var(--text2);transition:all .15s;">🖼 靠左大圖<br><span style="font-size:9px;opacity:.7;">[oimg]</span></button>
+      </div>
+      <label>圖片連結網址</label>
+      <input id="f1" placeholder="https://i.postimg.cc/xxx/image.jpg" oninput="prevImg()">
+      <div id="imgPrev" style="margin-top:8px;"></div>`;
+      setTimeout(()=>{ window._ximgType='ximg'; },30);
+      break;
     case 'postimages':
       html=`<div class="postimg-steps">
         <div class="postimg-step"><div class="step-num">1</div><div class="step-body"><div class="step-title">開啟 Postimages 上傳</div><div class="step-desc">點下方按鈕在新分頁開啟，上傳你的圖片。</div><button class="postimg-open-btn" onclick="window.open('https://postimages.org/','_blank')">🔗 開啟 Postimages</button></div></div>
@@ -1670,6 +1685,17 @@ function selectColor(c){selectedColor=c;document.getElementById('colorVal').text
 /* youtube preview */
 function prevYT(type){const v=document.getElementById('f1').value;const id=extractYTId(v);const prev=document.getElementById('ytPrev');const err=document.getElementById('ytErr');const embed=document.getElementById('ytEmbed');if(!v.trim()){prev.textContent='';err.textContent='';embed.innerHTML='';return;}if(id){prev.textContent=`✅ ID：${id} → [${type}]${id}[/${type}]`;err.textContent='';embed.innerHTML=`<iframe class="yt-embed" src="https://www.youtube.com/embed/${id}" allowfullscreen loading="lazy"></iframe>`;}else{prev.textContent='';err.textContent='❌ 無法解析影片 ID，請確認網址';embed.innerHTML='';}}
 function prevTT(){const v=document.getElementById('f1').value;const id=extractTTId(v);const prev=document.getElementById('ttPrev');const err=document.getElementById('ttErr');if(!v.trim()){prev.textContent='';err.textContent='';return;}if(id){prev.textContent=`✅ ID：${id} → [xtiktok]${id}[/xtiktok]`;err.textContent='';}else{prev.textContent='';err.textContent='❌ 無法解析 TikTok ID，請確認網址';}}
+function ximgSetType(type){
+  window._ximgType=type;
+  const map={ximg:'ximgT1',ovimg:'ximgT2',oimg:'ximgT3'};
+  ['ximgT1','ximgT2','ximgT3'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(!el)return;
+    const active=id===map[type];
+    el.style.background=active?'var(--gold)':'var(--surface2)';
+    el.style.color=active?'#000':'var(--text2)';
+  });
+}
 function prevImg(){const v=document.getElementById('f1').value.trim();const d=document.getElementById('imgPrev');if(!v){d.innerHTML='';return;}d.innerHTML=`<img src="${v}" style="max-width:100%;max-height:160px;border-radius:5px;" onerror="this.style.display='none'">`;}
 
 /* ═══════════════════════════════════════════
@@ -1865,7 +1891,7 @@ function confirmInsert(){
     case 'xsendvid':{const id=extractSendvidId(g('f1'));if(!id){showToast('❌ 無法解析 Sendvid ID');return;}addToGallery(id,'sendvid');code=`[xsendvid]${id}[/xsendvid]\n`;break;}
     case 'xmap': code=`[xmap]${g('f1')}[/xmap]\n`;break;
     case 'xmaplink': code=`[xmaplink]${g('f1')}[/xmaplink]\n`;break;
-    case 'ximg':{const url=g('f1');if(url)addToGallery(url,'img');code=`[ximg]${url}[/ximg]\n`;break;}
+    case 'ximg':{const url=g('f1');if(!url)break;addToGallery(url,'img');const t=window._ximgType||'ximg';code=`[${t}]${url}[/${t}]\n`;break;}
     case 'catbox':{/* handled by auto-upload buttons, no-op here */break;}
     case 'postimages':{const el=document.getElementById('piUrl');const raw=el?el.value.trim():'';if(!raw){showToast('❌ 請貼上論壇外連代碼');return;}const m=raw.match(/\[url=([^\]]+)\]\[img\]([^\[]+)\[\/img\]\[\/url\]/);if(!m){showToast('❌ 格式不符，請貼上論壇外連代碼');return;}addToGallery(m[2].trim(),'img');code=raw+'\n';break;}
     case 'dialog':{const rows=[...document.querySelectorAll('#dialogRows .dialog-row')];code=rows.map(r=>{const side=r.dataset.side;const txt=r.querySelector('input').value.trim();return txt?`[x${side}]${txt}[/x${side}]`:''}).filter(Boolean).join('')+'\n';break;}
@@ -1962,6 +1988,8 @@ function updatePreview(){
     ['xrate',c=>hasForbidden(c)?failRaw('xrate',c):`<span class="xrate-badge">★ ${c} / 10</span>`],
     ['xsmall',c=>hasForbidden(c)?failRaw('xsmall',c):`<span class="xsmall-text">${c}</span>`],
     ['ximg',c=>`<img class="forum-img ximg-img" src="${c}" onerror="this.style.display='none'">`],
+    ['ovimg',c=>`<img class="forum-img ovimg-img" src="${c}" onerror="this.style.display='none'">`],
+    ['oimg',c=>`<img class="forum-img oimg-img" src="${c}" onerror="this.style.display='none'">`],
     ['img',c=>`<img class="forum-img" src="${c}" onerror="this.style.display='none'">`],
     ['xmp4',c=>`<video class="forum-img" controls style="max-width:100%;border-radius:6px;margin:4px 0;"><source src="${c}" type="video/mp4">MP4: ${c}</video>`],
     ['xvmp4',c=>`<video class="forum-img" controls style="max-width:320px;border-radius:6px;margin:4px 0;"><source src="${c}" type="video/mp4">MP4: ${c}</video>`],
