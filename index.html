@@ -268,39 +268,46 @@ textarea#editor.dragging{border:2px dashed var(--gold)!important;}
 .emoji-page-btn:hover:not(.active){background:#ffe;border-color:#b8860b;}
 
 /* ── FORUM PREVIEW STYLES ── */
-#preview .xgold-box{border-left:4px solid #c8a000;background:#fffbe6;padding:8px 14px;margin:8px 0;font-weight:600;color:#5a4500;}
-#preview .xcenter-box{text-align:center;font-weight:700;color:#b8860b;font-size:15px;padding:10px 0;}
-#preview .xgban-box{background:linear-gradient(90deg,#ffe066,#ffd000);text-align:center;font-weight:700;color:#5a3e00;padding:14px;border-radius:4px;font-size:16px;margin:8px 0;}
-#preview .xhr-line{border:none;border-top:2px solid #c8a000;margin:12px 0;opacity:.6;}
-#preview .xnote-box{border-left:4px solid #e6b800;background:#fffde7;padding:8px 14px;margin:8px 0;color:#5c4a00;font-size:13px;}
-#preview .xwarn-box{border-left:4px solid #f87171;background:#fff1f1;padding:8px 14px;margin:8px 0;color:#b91c1c;font-size:13px;border-radius:0 4px 4px 0;}
-#preview .xblue-box{border-left:4px solid #3b82f6;background:#eff6ff;padding:8px 14px;margin:8px 0;color:#1d4ed8;font-size:13px;font-weight:700;}
-#preview .xgreen-box{border-left:4px solid #22c55e;background:#f0fdf4;padding:8px 14px;margin:8px 0;color:#15803d;font-size:13px;font-weight:700;}
-#preview .xred-box{border-left:4px solid #ef4444;background:#fff5f5;padding:8px 14px;margin:8px 0;color:#dc2626;font-size:13px;font-weight:700;}
-#preview .xinfo-box{border-left:4px solid #93c5fd;background:#eff6ff;padding:8px 14px;margin:8px 0;color:#1d4ed8;font-size:13px;border-radius:0 4px 4px 0;}
-#preview .xglass-box{background:rgba(200,200,210,.12);border:1px solid rgba(200,200,210,.4);padding:10px 16px;border-radius:8px;margin:8px 0;color:#444;font-size:13px;}
-#preview .xsmall-text{font-size:11px;color:#888;line-height:1.5;}
-#preview .xspoiler-wrap{margin:6px 0;}
-#preview .xcard-box{border:1px solid #ddd;border-radius:8px;overflow:hidden;margin:8px 0;}
-#preview .xcard-title{background:#f5f5f5;padding:8px 14px;font-weight:700;font-size:13px;border-bottom:1px solid #ddd;color:#333;}
-#preview .xcard-body{padding:10px 14px;font-size:13px;color:#555;}
-#preview .xtag-pill{display:inline-block;background:#e8f0fe;color:#1a56db;border:1px solid #c7d7fc;border-radius:20px;padding:2px 10px;font-size:12px;margin:2px;}
-#preview .xrate-badge{display:inline-flex;align-items:center;gap:4px;background:#fff9e6;border:1px solid #f0d060;border-radius:20px;padding:3px 10px;font-size:12px;color:#8a6000;font-weight:600;}
-#preview .xbtn-link{display:inline-block;background:linear-gradient(180deg,#ff80b0,#f0508a);border:none;border-radius:8px;padding:8px 22px;font-size:13px;font-weight:600;color:#fff;text-decoration:none;margin:4px 0;box-shadow:0 2px 6px rgba(220,60,120,.3),inset 0 1px 0 rgba(255,255,255,.3);transition:opacity .15s;}
-#preview .xbtn-link:hover{opacity:.85;}
-#preview .quote-box{border:1px solid #ddd;border-radius:4px;background:#f9f9f9;padding:10px 14px;margin:8px 0;color:#555;font-size:13px;}
-#preview .xquote-box{border-left:3px solid #ccc;padding:4px 14px;margin:8px 0;color:#666;font-size:13px;font-style:italic;}
-#preview .hide-box{background:#fff8e1;border:1px dashed #f0c040;border-radius:4px;padding:10px 14px;margin:8px 0;color:#888;font-size:12px;text-align:center;}
-#preview .dialog-container{margin:8px 0;}
-#preview .xleft-bubble{display:flex;justify-content:flex-start;margin:4px 0;}
+#preview .xgold-box,#previewOverlayBody .xgold-box{border-left:4px solid #c8a000;background:#fffbe6;padding:8px 14px;margin:8px 0;font-weight:600;color:#5a4500;}
+#preview .xcenter-box,#previewOverlayBody .xcenter-box{text-align:center;font-weight:700;color:#b8860b;font-size:15px;padding:10px 0;}
+#preview .xgban-box,#previewOverlayBody .xgban-box{background:linear-gradient(90deg,#ffe066,#ffd000);text-align:center;font-weight:700;color:#5a3e00;padding:14px;border-radius:4px;font-size:16px;margin:8px 0;}
+#preview .xhr-line,#previewOverlayBody .xhr-line{border:none;border-top:2px solid #c8a000;margin:12px 0;opacity:.6;}
+#preview .xnote-box,#previewOverlayBody .xnote-box{border-left:4px solid #e6b800;background:#fffde7;padding:8px 14px;margin:8px 0;color:#5c4a00;font-size:13px;}
+#preview .xwarn-box,#previewOverlayBody .xwarn-box{border-left:4px solid #f87171;background:#fff1f1;padding:8px 14px;margin:8px 0;color:#b91c1c;font-size:13px;border-radius:0 4px 4px 0;}
+#preview .xblue-box,#previewOverlayBody .xblue-box{border-left:4px solid #3b82f6;background:#eff6ff;padding:8px 14px;margin:8px 0;color:#1d4ed8;font-size:13px;font-weight:700;}
+#preview .xgreen-box,#previewOverlayBody .xgreen-box{border-left:4px solid #22c55e;background:#f0fdf4;padding:8px 14px;margin:8px 0;color:#15803d;font-size:13px;font-weight:700;}
+#preview .xred-box,#previewOverlayBody .xred-box{border-left:4px solid #ef4444;background:#fff5f5;padding:8px 14px;margin:8px 0;color:#dc2626;font-size:13px;font-weight:700;}
+#preview .xinfo-box,#previewOverlayBody .xinfo-box{border-left:4px solid #93c5fd;background:#eff6ff;padding:8px 14px;margin:8px 0;color:#1d4ed8;font-size:13px;border-radius:0 4px 4px 0;}
+#preview .xglass-box,#previewOverlayBody .xglass-box{background:rgba(200,200,210,.12);border:1px solid rgba(200,200,210,.4);padding:10px 16px;border-radius:8px;margin:8px 0;color:#444;font-size:13px;}
+#preview .xsmall-text,#previewOverlayBody .xsmall-text{font-size:11px;color:#888;line-height:1.5;}
+#preview .xspoiler-wrap,#previewOverlayBody .xspoiler-wrap{margin:6px 0;}
+#preview .xcard-box,#previewOverlayBody .xcard-box{border:1px solid #ddd;border-radius:8px;overflow:hidden;margin:8px 0;}
+#preview .xcard-title,#previewOverlayBody .xcard-title{background:#f5f5f5;padding:8px 14px;font-weight:700;font-size:13px;border-bottom:1px solid #ddd;color:#333;}
+#preview .xcard-body,#previewOverlayBody .xcard-body{padding:10px 14px;font-size:13px;color:#555;}
+#preview .xtag-pill,#previewOverlayBody .xtag-pill{display:inline-block;background:#e8f0fe;color:#1a56db;border:1px solid #c7d7fc;border-radius:20px;padding:2px 10px;font-size:12px;margin:2px;}
+#preview .xrate-badge,#previewOverlayBody .xrate-badge{display:inline-flex;align-items:center;gap:4px;background:#fff9e6;border:1px solid #f0d060;border-radius:20px;padding:3px 10px;font-size:12px;color:#8a6000;font-weight:600;}
+#preview .xbtn-link,#previewOverlayBody .xbtn-link{display:inline-block;background:linear-gradient(180deg,#ff80b0,#f0508a);border:none;border-radius:8px;padding:8px 22px;font-size:13px;font-weight:600;color:#fff;text-decoration:none;margin:4px 0;box-shadow:0 2px 6px rgba(220,60,120,.3),inset 0 1px 0 rgba(255,255,255,.3);transition:opacity .15s;}
+#preview .xbtn-link:hover,#previewOverlayBody .xbtn-link:hover{opacity:.85;}
+#preview .quote-box,#previewOverlayBody .quote-box{border:1px solid #ddd;border-radius:4px;background:#f9f9f9;padding:10px 14px;margin:8px 0;color:#555;font-size:13px;}
+#preview .xquote-box,#previewOverlayBody .xquote-box{border-left:3px solid #ccc;padding:4px 14px;margin:8px 0;color:#666;font-size:13px;font-style:italic;}
+#preview .hide-box,#previewOverlayBody .hide-box{background:#fff8e1;border:1px dashed #f0c040;border-radius:4px;padding:10px 14px;margin:8px 0;color:#888;font-size:12px;text-align:center;}
+#preview .xvimg-spread,#previewOverlayBody .xvimg-spread{display:flex;gap:0;margin:6px 0;border:8px solid #fff;box-shadow:0 1px 8px rgba(0,0,0,.2);border-radius:4px;overflow:hidden;max-width:91%;}
+#preview .xvimg-spread .xvimg-page{flex:1;width:50%;min-width:0;object-fit:cover;display:block;max-height:600px;}
+#previewOverlayBody .xvimg-spread{display:flex;gap:0;margin:6px 0;border:8px solid #fff;box-shadow:0 1px 8px rgba(0,0,0,.2);border-radius:4px;overflow:hidden;max-width:91%;}
+#previewOverlayBody .xvimg-spread .xvimg-page{flex:1;width:50%;min-width:0;object-fit:cover;display:block;max-height:600px;}
+@media(max-width:768px){
+  #preview .xvimg-spread,#previewOverlayBody .xvimg-spread{max-width:100%;border:5px solid #fff;}
+  #preview .xvimg-spread .xvimg-page,#previewOverlayBody .xvimg-spread .xvimg-page{max-height:35vw;}
+}
+#preview .xleft-bubble,#previewOverlayBody .xleft-bubble{display:flex;justify-content:flex-start;margin:4px 0;}
 #preview .xleft-bubble span{background:#f0f0f0;border-radius:0 12px 12px 12px;padding:8px 14px;max-width:70%;font-size:13px;color:#333;}
-#preview .xright-bubble{display:flex;justify-content:flex-end;margin:4px 0;}
+#preview .xright-bubble,#previewOverlayBody .xright-bubble{display:flex;justify-content:flex-end;margin:4px 0;}
 #preview .xright-bubble span{background:#dcf8c6;border-radius:12px 0 12px 12px;padding:8px 14px;max-width:70%;font-size:13px;color:#333;}
-#preview .xtable{width:100%;border-collapse:collapse;margin:8px 0;font-size:13px;}
+#preview .xtable,#previewOverlayBody .xtable{width:100%;border-collapse:collapse;margin:8px 0;font-size:13px;}
 #preview .xtable th{background:#f5f5f0;border:1px solid #ddd;padding:8px 12px;text-align:left;font-weight:700;color:#333;}
 #preview .xtable td{border:1px solid #ddd;padding:7px 12px;color:#555;}
 #preview .xtable tr:nth-child(even) td{background:#fafafa;}
-#preview .media-ph{background:#f0f0f0;border:1px solid #ddd;border-radius:6px;padding:10px 14px;margin:6px 0;font-size:12px;color:#888;text-align:center;}
+#preview .media-ph,#previewOverlayBody .media-ph{background:#f0f0f0;border:1px solid #ddd;border-radius:6px;padding:10px 14px;margin:6px 0;font-size:12px;color:#888;text-align:center;}
 #preview img.forum-img{max-width:70%;border-radius:4px;margin:4px 0;display:block;}
 #preview img.forum-img.ximg-img{max-width:91%;border-radius:4px;margin:4px auto;display:block;border:8px solid #fff;box-shadow:0 1px 6px rgba(0,0,0,.18);}
 #preview img.forum-img.ovimg-img{max-width:91%;border-radius:4px;margin:4px 0;display:block;border:8px solid #fff;box-shadow:0 1px 6px rgba(0,0,0,.18);}
@@ -944,7 +951,7 @@ let lastWasCut=false;
 const AUTO_CLOSE_TAGS=[
   'b','i','u','strike','xgold','xcenter','xgban','xnote','xwarn',
   'xblue','xgreen','xred','xinfo','xglass','xsmall','xquote','quote',
-  'xtag','xrate','xbtn','xspoiler','xcard','ximg','ovimg','oimg','xmp4','xvmp4',
+  'xtag','xrate','xbtn','xspoiler','xcard','ximg','ovimg','oimg','xvimg-l','xvimg-r','xmp4','xvmp4',
   'xmp3','xsound','xsendvid','xmap','xmaplink','xyoutube','xsyoutube',
   'xtiktok','hide','sell','fly','move','code','url',
   'size','color','backcolor','align','xleft','xright',
@@ -1128,7 +1135,7 @@ function updateStats(){
   // Count CJK chars only
   const cjk=(stripped.match(/[\u4e00-\u9fff\u3400-\u4dbf\uf900-\ufaff]/g)||[]).length;
   // Count images
-  const imgCount=(v.match(/\[ximg\]|\[ovimg\]|\[oimg\]|\[img\]|\[url=[^\]]+\]\[img\]/g)||[]).length;
+  const imgCount=(v.match(/\[ximg\]|\[ovimg\]|\[oimg\]|\[xvimg-l\]|\[xvimg-r\]|\[img\]|\[url=[^\]]+\]\[img\]/g)||[]).length;
   // Count videos (mp4, youtube, tiktok, sendvid, vmp4)
   const vidCount=(v.match(/\[xmp4\]|\[xvmp4\]|\[xyoutube\]|\[xsyoutube\]|\[xtiktok\]|\[xsendvid\]/g)||[]).length;
   document.getElementById('charCount').textContent=`中文字數：${cjk}字`;
@@ -1188,8 +1195,10 @@ function toggleSplitMerge(){
     else main.style.gridTemplateColumns='1fr';
     splitBtn.textContent='分欄';
     previewBtn.style.display='';
-    // 手機：移除分欄 class，恢復固定版面
     document.body.classList.remove('split-mode');
+    // 隱藏 inline preview（若存在）
+    const ip=document.getElementById('mobileInlinePreview');
+    if(ip)ip.style.display='none';
   } else {
     // 分欄模式
     if(splitFloat)splitFloat.style.display='flex';
@@ -1483,13 +1492,33 @@ function openModal(tag){
       html=`
       <div style="display:flex;gap:0;margin-bottom:12px;border-radius:8px;overflow:hidden;border:1px solid var(--border);">
         <button id="ximgT1" onclick="ximgSetType('ximg')" style="flex:1;padding:7px 4px;border:none;cursor:pointer;font-family:inherit;font-size:11px;font-weight:700;background:var(--gold);color:#000;transition:all .15s;">🖼 置中大圖<br><span style="font-size:9px;opacity:.7;">[ximg]</span></button>
-        <button id="ximgT2" onclick="ximgSetType('ovimg')" style="flex:1;padding:7px 4px;border:none;cursor:pointer;font-family:inherit;font-size:11px;font-weight:600;background:var(--surface2);color:var(--text2);transition:all .15s;">🎞 靠左大圖(GIF)<br><span style="font-size:9px;opacity:.7;">[ovimg]</span></button>
-        <button id="ximgT3" onclick="ximgSetType('oimg')" style="flex:1;padding:7px 4px;border:none;cursor:pointer;font-family:inherit;font-size:11px;font-weight:600;background:var(--surface2);color:var(--text2);transition:all .15s;">🖼 靠左大圖<br><span style="font-size:9px;opacity:.7;">[oimg]</span></button>
+        <button id="ximgT2" onclick="ximgSetType('ovimg')" style="flex:1;padding:7px 4px;border:none;cursor:pointer;font-family:inherit;font-size:11px;font-weight:600;background:var(--surface2);color:var(--text2);transition:all .15s;">🎞 靠左大圖（直式）<br><span style="font-size:9px;opacity:.7;">[ovimg]</span></button>
+        <button id="ximgT3" onclick="ximgSetType('oimg')" style="flex:1;padding:7px 4px;border:none;cursor:pointer;font-family:inherit;font-size:11px;font-weight:600;background:var(--surface2);color:var(--text2);transition:all .15s;">🖼 靠左大圖（橫式）<br><span style="font-size:9px;opacity:.7;">[oimg]</span></button>
+        <button id="ximgT4" onclick="ximgSetType('xvimg')" style="flex:1;padding:7px 4px;border:none;cursor:pointer;font-family:inherit;font-size:11px;font-weight:600;background:var(--surface2);color:var(--text2);transition:all .15s;">📖 雙頁大圖<br><span style="font-size:9px;opacity:.7;">[xvimg-l/r]</span></button>
       </div>
-      <label>圖片連結網址</label>
-      <div style="font-size:10px;color:var(--text2);margin-bottom:4px;">💡 使用 Postimages 請選擇「<b>直接鏈接</b>」格式</div>
-      <input id="f1" placeholder="https://i.postimg.cc/xxx/image.jpg" oninput="prevImg()">
-      <div id="imgPrev" style="margin-top:8px;"></div>`;
+
+      <!-- 一般圖片 (ximg/ovimg/oimg) -->
+      <div id="ximgSingle">
+        <label>圖片連結網址</label>
+        <div style="font-size:10px;color:var(--text2);margin-bottom:4px;">💡 使用 Postimages 請選擇「<b>直接鏈接</b>」格式</div>
+        <input id="f1" placeholder="https://i.postimg.cc/xxx/image.jpg" oninput="prevImg()">
+        <div id="imgPrev" style="margin-top:8px;"></div>
+      </div>
+
+      <!-- 雙頁大圖 (xvimg) -->
+      <div id="ximgDouble" style="display:none;">
+        <div style="font-size:11px;color:var(--text2);background:rgba(240,180,41,.07);border:1px solid rgba(240,180,41,.2);border-radius:6px;padding:8px 11px;margin-bottom:10px;line-height:1.6;">
+          📖 貼入兩張圖的 Postimages <b>論壇外連</b>代碼。
+        </div>
+        <label>左頁</label>
+        <div style="font-size:10px;color:var(--text2);margin-bottom:4px;">💡 Postimages 請選擇「<b>論壇外链</b>」格式</div>
+        <textarea id="xvLeft" rows="3" placeholder="[url=https://postimages.org/][img]https://i.postimg.cc/xxx/left.jpg[/img][/url]" oninput="prevXvimg()" style="font-family:'JetBrains Mono',monospace;font-size:11px;width:100%;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:7px;color:var(--text);resize:vertical;"></textarea>
+        <label style="margin-top:8px;">右頁</label>
+        <div style="font-size:10px;color:var(--text2);margin-bottom:4px;">💡 Postimages 請選擇「<b>論壇外链</b>」格式</div>
+        <textarea id="xvRight" rows="3" placeholder="[url=https://postimages.org/][img]https://i.postimg.cc/xxx/right.jpg[/img][/url]" oninput="prevXvimg()" style="font-family:'JetBrains Mono',monospace;font-size:11px;width:100%;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:7px;color:var(--text);resize:vertical;"></textarea>
+        <div id="xvErr" style="font-size:11px;color:#ef4444;min-height:12px;margin-top:4px;"></div>
+        <div id="xvPrev" style="margin-top:10px;display:flex;gap:4px;"></div>
+      </div>`;
       setTimeout(()=>{ window._ximgType='ximg'; },30);
       break;
     case 'postimages':
@@ -1689,17 +1718,50 @@ function prevYT(type){const v=document.getElementById('f1').value;const id=extra
 function prevTT(){const v=document.getElementById('f1').value;const id=extractTTId(v);const prev=document.getElementById('ttPrev');const err=document.getElementById('ttErr');if(!v.trim()){prev.textContent='';err.textContent='';return;}if(id){prev.textContent=`✅ ID：${id} → [xtiktok]${id}[/xtiktok]`;err.textContent='';}else{prev.textContent='';err.textContent='❌ 無法解析 TikTok ID，請確認網址';}}
 function ximgSetType(type){
   window._ximgType=type;
-  const map={ximg:'ximgT1',ovimg:'ximgT2',oimg:'ximgT3'};
-  ['ximgT1','ximgT2','ximgT3'].forEach(id=>{
+  const map={ximg:'ximgT1',ovimg:'ximgT2',oimg:'ximgT3',xvimg:'ximgT4'};
+  ['ximgT1','ximgT2','ximgT3','ximgT4'].forEach(id=>{
     const el=document.getElementById(id);
     if(!el)return;
     const active=id===map[type];
     el.style.background=active?'var(--gold)':'var(--surface2)';
     el.style.color=active?'#000':'var(--text2)';
+    el.style.fontWeight=active?'700':'600';
   });
+  const single=document.getElementById('ximgSingle');
+  const dbl=document.getElementById('ximgDouble');
+  if(single)single.style.display=type==='xvimg'?'none':'';
+  if(dbl)dbl.style.display=type==='xvimg'?'':'none';
 }
 function prevImg(){const v=document.getElementById('f1').value.trim();const d=document.getElementById('imgPrev');if(!v){d.innerHTML='';return;}d.innerHTML=`<img src="${v}" style="max-width:100%;max-height:160px;border-radius:5px;" onerror="this.style.display='none'">`;}
 
+/* 從論壇外連代碼或直接網址抽取圖片URL */
+function extractImgUrl(raw){
+  raw=raw.trim();
+  // 嘗試抓 [img]URL[/img] 裡的URL
+  const m=raw.match(/\[img\](https?:\/\/[^\[\]]+)\[\/img\]/i);
+  if(m)return m[1].trim();
+  // 嘗試直接是 http URL
+  if(/^https?:\/\//i.test(raw))return raw;
+  return null;
+}
+
+function prevXvimg(){
+  const lRaw=document.getElementById('xvLeft')?document.getElementById('xvLeft').value:'';
+  const rRaw=document.getElementById('xvRight')?document.getElementById('xvRight').value:'';
+  const err=document.getElementById('xvErr');
+  const prev=document.getElementById('xvPrev');
+  if(!prev)return;
+  const lUrl=extractImgUrl(lRaw);
+  const rUrl=extractImgUrl(rRaw);
+  if(!lRaw.trim()&&!rRaw.trim()){prev.innerHTML='';if(err)err.textContent='';return;}
+  let errMsg='';
+  if(lRaw.trim()&&!lUrl)errMsg+='❌ 左頁格式無法辨識。';
+  if(rRaw.trim()&&!rUrl)errMsg+=(errMsg?' ':'')+'❌ 右頁格式無法辨識。';
+  if(err)err.textContent=errMsg;
+  prev.innerHTML='';
+  if(lUrl)prev.innerHTML+=`<img src="${lUrl}" style="flex:1;max-width:49%;max-height:180px;object-fit:cover;border:6px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.15);border-radius:2px;" onerror="this.style.display='none'">`;
+  if(rUrl)prev.innerHTML+=`<img src="${rUrl}" style="flex:1;max-width:49%;max-height:180px;object-fit:cover;border:6px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.15);border-radius:2px;" onerror="this.style.display='none'">`;
+}
 /* ═══════════════════════════════════════════
    CATBOX AUTO-UPLOAD
 ═══════════════════════════════════════════ */
@@ -1893,7 +1955,26 @@ function confirmInsert(){
     case 'xsendvid':{const id=extractSendvidId(g('f1'));if(!id){showToast('❌ 無法解析 Sendvid ID');return;}addToGallery(id,'sendvid');code=`[xsendvid]${id}[/xsendvid]\n`;break;}
     case 'xmap': code=`[xmap]${g('f1')}[/xmap]\n`;break;
     case 'xmaplink': code=`[xmaplink]${g('f1')}[/xmaplink]\n`;break;
-    case 'ximg':{const url=g('f1');if(!url)break;addToGallery(url,'img');const t=window._ximgType||'ximg';code=`[${t}]${url}[/${t}]\n`;break;}
+    case 'ximg':{
+      const t=window._ximgType||'ximg';
+      if(t==='xvimg'){
+        const lRaw=document.getElementById('xvLeft')?document.getElementById('xvLeft').value.trim():'';
+        const rRaw=document.getElementById('xvRight')?document.getElementById('xvRight').value.trim():'';
+        if(!lRaw||!rRaw){showToast('❌ 請填入左頁與右頁');return;}
+        // 把 [img] 換成 [xvimg-l]，[/img] 換成 [/xvimg-l]
+        const toL=s=>s.replace(/\[img\]/gi,'[xvimg-l]').replace(/\[\/img\]/gi,'[/xvimg-l]');
+        const toR=s=>s.replace(/\[img\]/gi,'[xvimg-r]').replace(/\[\/img\]/gi,'[/xvimg-r]');
+        // 也順便加入圖庫
+        const lUrl=extractImgUrl(lRaw);const rUrl=extractImgUrl(rRaw);
+        if(lUrl)addToGallery(lUrl,'img');if(rUrl)addToGallery(rUrl,'img');
+        code=toL(lRaw)+toR(rRaw)+'\n';
+      } else {
+        const url=g('f1');if(!url)break;
+        addToGallery(url,'img');
+        code=`[${t}]${url}[/${t}]\n`;
+      }
+      break;
+    }
     case 'catbox':{/* handled by auto-upload buttons, no-op here */break;}
     case 'postimages':{const el=document.getElementById('piUrl');const raw=el?el.value.trim():'';if(!raw){showToast('❌ 請貼上論壇外連代碼');return;}const m=raw.match(/\[url=([^\]]+)\]\[img\]([^\[]+)\[\/img\]\[\/url\]/);if(!m){showToast('❌ 格式不符，請貼上論壇外連代碼');return;}addToGallery(m[2].trim(),'img');code=raw+'\n';break;}
     case 'dialog':{const rows=[...document.querySelectorAll('#dialogRows .dialog-row')];code=rows.map(r=>{const side=r.dataset.side;const txt=r.querySelector('input').value.trim();return txt?`[x${side}]${txt}[/x${side}]`:''}).filter(Boolean).join('')+'\n';break;}
@@ -1991,8 +2072,7 @@ function updatePreview(){
     ['xsmall',c=>hasForbidden(c)?failRaw('xsmall',c):`<span class="xsmall-text">${c}</span>`],
     ['ximg',c=>`<img class="forum-img ximg-img" src="${c}" onerror="this.style.display='none'">`],
     ['ovimg',c=>`<img class="forum-img ovimg-img" src="${c}" onerror="this.style.display='none'">`],
-    ['oimg',c=>`<img class="forum-img oimg-img" src="${c}" onerror="this.style.display='none'">`],
-    ['img',c=>`<img class="forum-img" src="${c}" onerror="this.style.display='none'">`],
+    ['oimg',c=>`<img class="forum-img oimg-img" src="${c}" onerror="this.style.display='none'">`],    ['img',c=>`<img class="forum-img" src="${c}" onerror="this.style.display='none'">`],
     ['xmp4',c=>`<video class="forum-img" controls style="max-width:100%;border-radius:6px;margin:4px 0;"><source src="${c}" type="video/mp4">MP4: ${c}</video>`],
     ['xvmp4',c=>`<video class="forum-img" controls style="max-width:320px;border-radius:6px;margin:4px 0;"><source src="${c}" type="video/mp4">MP4: ${c}</video>`],
     ['xmp3',c=>`<audio controls style="width:100%;margin:6px 0;"><source src="${c}" type="audio/mpeg">MP3: ${c}</audio>`],
@@ -2027,6 +2107,19 @@ function updatePreview(){
     return `<a class="xbtn-link" href="${url}" target="_blank">${text.trim()}</a>`;
   });
   // dialog
+  // xvimg 雙頁書本版面（支援 [url=...][xvimg-l]URL[/xvimg-l][/url] 格式）
+  h=h.replace(/\[url=([^\]]+)\]\[xvimg-l\]([\s\S]*?)\[\/xvimg-l\]\[\/url\]\s*\[url=([^\]]+)\]\[xvimg-r\]([\s\S]*?)\[\/xvimg-r\]\[\/url\]/g,(_,la,lSrc,ra,rSrc)=>{
+    return `<div class="xvimg-spread"><a href="${la}" target="_blank"><img class="xvimg-page" src="${lSrc.trim()}" onerror="this.style.display='none'"></a><a href="${ra}" target="_blank"><img class="xvimg-page" src="${rSrc.trim()}" onerror="this.style.display='none'"></a></div>`;
+  });
+  // 裸 xvimg-l/r 配對（不帶 url 外連）
+  h=h.replace(/\[xvimg-l\]([\s\S]*?)\[\/xvimg-l\]\s*\[xvimg-r\]([\s\S]*?)\[\/xvimg-r\]/g,(_,l,r)=>{
+    return `<div class="xvimg-spread"><img class="xvimg-page" src="${l.trim()}" onerror="this.style.display='none'"><img class="xvimg-page" src="${r.trim()}" onerror="this.style.display='none'"></div>`;
+  });
+  // 落單容錯
+  h=h.replace(/\[url=([^\]]+)\]\[xvimg-l\]([\s\S]*?)\[\/xvimg-l\]\[\/url\]/g,(_,a,src)=>`<a href="${a}" target="_blank"><img class="forum-img ximg-img" src="${src.trim()}" onerror="this.style.display='none'"></a>`);
+  h=h.replace(/\[url=([^\]]+)\]\[xvimg-r\]([\s\S]*?)\[\/xvimg-r\]\[\/url\]/g,(_,a,src)=>`<a href="${a}" target="_blank"><img class="forum-img ximg-img" src="${src.trim()}" onerror="this.style.display='none'"></a>`);
+  h=h.replace(/\[xvimg-l\]([\s\S]*?)\[\/xvimg-l\]/g,(_,c)=>`<img class="forum-img ximg-img" src="${c.trim()}" onerror="this.style.display='none'">`);
+  h=h.replace(/\[xvimg-r\]([\s\S]*?)\[\/xvimg-r\]/g,(_,c)=>`<img class="forum-img ximg-img" src="${c.trim()}" onerror="this.style.display='none'">`);
   h=h.replace(/\[xleft\]([\s\S]*?)\[\/xleft\]/g,(_,c)=>`<div class="xleft-bubble"><span>${c.trim()}</span></div>`);
   h=h.replace(/\[xright\]([\s\S]*?)\[\/xright\]/g,(_,c)=>`<div class="xright-bubble"><span>${c.trim()}</span></div>`);
   // table
