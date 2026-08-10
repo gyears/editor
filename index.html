@@ -781,23 +781,13 @@ function renderPanel4Gallery(){
         const ytId=g.url.replace(/\s/g,'');
         thumbHtml=`<img src="https://img.youtube.com/vi/${ytId}/mqdefault.jpg" loading="lazy" onerror="this.style.display='none';this.parentElement.innerHTML='<div class=gal-thumb-ph>▶️</div>'">`;
       } else if(g.type==='vid'){
-        thumbHtml=`<div class="gal-thumb-ph" id="gvt_${i}">⏳</div>`;
-        setTimeout((()=>{const url=g.url,idx=i;return ()=>{
-          const ph=document.getElementById('gvt_'+idx);if(!ph)return;
-          const v=document.createElement('video');
-          v.src=url;v.crossOrigin='anonymous';v.muted=true;v.playsInline=true;
-          v.addEventListener('loadeddata',()=>{v.currentTime=0.5;});
-          v.addEventListener('seeked',()=>{
-            try{const c=document.createElement('canvas');c.width=120;c.height=80;
-            c.getContext('2d').drawImage(v,0,0,120,80);
-            const img=document.createElement('img');img.src=c.toDataURL();
-            img.style.cssText='width:100%;height:100%;object-fit:cover;display:block;';
-            if(ph&&ph.parentElement){ph.parentElement.innerHTML='';ph.parentElement.appendChild(img);}
-            v.remove();}catch(e){if(ph)ph.textContent='🎥';}
-          });
-          v.addEventListener('error',()=>{if(ph)ph.textContent='🎥';});
-          v.load();
-        };})(),200);
+        const fname=g.url.split('/').pop().split('?')[0]||'video';
+        const ext=fname.split('.').pop().toUpperCase().slice(0,4)||'MP4';
+        thumbHtml=`<div class="gal-thumb-ph" style="background:#1a1a2e;flex-direction:column;gap:3px;">
+          <span style="font-size:22px;">▶</span>
+          <span style="font-size:9px;color:#aaa;font-family:monospace;background:#000;padding:1px 5px;border-radius:3px;">${ext}</span>
+          <span style="font-size:8px;color:#666;max-width:56px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:center;">${fname.slice(0,12)}</span>
+        </div>`;
       } else if(g.type==='sendvid'){
         thumbHtml=`<div class="gal-thumb-ph">📺</div>`;
       } else if(g.type==='tt'){
@@ -1428,6 +1418,7 @@ function buildLeftPanel(){
       {tag:'ximg',icon:'🎨',label:lang==='zh'?'插入美圖':'Insert Image',code:'美圖',modal:true},
       {tag:'postimages',icon:'📤',label:lang==='zh'?'Postimages 上傳':'Postimages Upload',code:'半自動',modal:true,gold:true},
       {tag:'catbox',icon:'🐱',label:lang==='zh'?'Catbox 自動上傳':'Catbox Upload',code:'自動',modal:true,gold:true},
+      {tag:'imge',icon:'🌄',label:lang==='zh'?'im.ge 自動上傳':'im.ge Upload',code:'自動',modal:true,gold:true},
       {tag:'gallery',icon:'🗂',label:lang==='zh'?'圖庫':'Gallery',code:'gallery',modal:true,gold:false},
     ]},
     {key:'dialog',title:lang==='zh'?'💬 對話':'💬 Dialog',tags:[
@@ -1479,7 +1470,7 @@ function openModal(tag){
     xgold:'🏷 章節標題',xcenter:'⬛ 置中標題',xgban:'🟨 金色橫幅',
     xnote:'📌 重點框',xwarn:'⚠️ 警告框',xblue:'🔵 技術提示',xgreen:'✅ 成功訊息',xred:'🚫 禁止事項',xinfo:'ℹ️ 蘋果藍資訊框',xglass:'🪟 蘋果灰玻璃感',
     xcard:'🃏 卡片',quote:'「」引用框 type2（框格）',xquote:'｜引用框 type1（斜體）',
-    ximg_center:'🖼 置中大圖',xrate:'⭐ 評分',xbtn:'🔘 按鈕連結',
+    imge:'🌄 im.ge 自動上傳',xrate:'⭐ 評分',xbtn:'🔘 按鈕連結',
     xyoutube:'▶️ YouTube 長影片',xsyoutube:'📱 YouTube直立影片',xmp4:'🎥 MP4 影片',xvmp4:'📹 直立 MP4',xmp3:'🎵 MP3 音樂',xtiktok:'🎶 TikTok',xsound:'🔊 SoundCloud',xsendvid:'📺 Sendvid 影片',xmap:'🗺 地圖座標（xmap）',xmaplink:'📍 地點名稱（xmaplink）',
     xspoiler:'🔽 劇透文字（xspoiler）',xsmall:'🔡 小字補充（xsmall）',ximg:'🖼 插入圖片',postimages:'📤 Postimages 半自動上傳',catbox:'🐱 貓盒 Catbox 上傳',
     dialog:'🗨 對話泡泡',xtable:'📋 表格',hide:'🔐 加密內容',sell:'💰 販售（sell）',
@@ -1578,13 +1569,13 @@ function openModal(tag){
       <!-- 雙頁美圖 (xvimg) -->
       <div id="ximgDouble" style="display:none;">
         <div style="font-size:11px;color:var(--text2);background:rgba(240,180,41,.07);border:1px solid rgba(240,180,41,.2);border-radius:6px;padding:8px 11px;margin-bottom:10px;line-height:1.6;">
-          📖 Postimages(直接链接、论坛外链)，im.ge(BB Code)。
+          📖 貼入兩張圖的 Postimages <b>論壇外連</b>代碼。
         </div>
         <label>左頁</label>
-        <div style="font-size:10px;color:var(--text2);margin-bottom:4px;">💡 圖片連結網址 或 論壇外連代碼</div>
+        <div style="font-size:10px;color:var(--text2);margin-bottom:4px;">💡 Postimages 請選擇「<b>論壇外链</b>」格式</div>
         <textarea id="xvLeft" rows="3" placeholder="[url=https://postimages.org/][img]https://i.postimg.cc/xxx/left.jpg[/img][/url]" oninput="prevXvimg()" style="font-family:'JetBrains Mono',monospace;font-size:11px;width:100%;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:7px;color:var(--text);resize:vertical;"></textarea>
         <label style="margin-top:8px;">右頁</label>
-        <div style="font-size:10px;color:var(--text2);margin-bottom:4px;">💡 圖片連結網址 或 論壇外連代碼</div>
+        <div style="font-size:10px;color:var(--text2);margin-bottom:4px;">💡 Postimages 請選擇「<b>論壇外链</b>」格式</div>
         <textarea id="xvRight" rows="3" placeholder="[url=https://postimages.org/][img]https://i.postimg.cc/xxx/right.jpg[/img][/url]" oninput="prevXvimg()" style="font-family:'JetBrains Mono',monospace;font-size:11px;width:100%;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:7px;color:var(--text);resize:vertical;"></textarea>
         <div id="xvErr" style="font-size:11px;color:#ef4444;min-height:12px;margin-top:4px;"></div>
         <div id="xvPrev" style="margin-top:10px;display:flex;gap:4px;"></div>
@@ -1662,7 +1653,55 @@ function openModal(tag){
       document.getElementById('modalActions').style.display='none';
       setTimeout(()=>{ cbManType='img'; },30);
       break;
-    case 'gallery':
+    case 'imge':{
+      // 讀取已儲存的 API Key
+      let savedKey='';
+      try{savedKey=localStorage.getItem('imge_api_key')||'';}catch(e){}
+      html=`
+      <!-- API Key 設定區 -->
+      <div style="background:rgba(240,180,41,.07);border:1px solid rgba(240,180,41,.2);border-radius:8px;padding:10px 12px;margin-bottom:14px;">
+        <div style="font-size:12px;font-weight:700;color:var(--gold);margin-bottom:8px;">🔑 API Key 設定</div>
+        <div style="font-size:11px;color:var(--text2);margin-bottom:8px;line-height:1.6;">
+          取得 API Key 的方法：<br>
+          1. 前往 <button class="postimg-open-btn" style="display:inline;padding:1px 8px;font-size:11px;" onclick="window.open('https://im.ge','_blank')">im.ge</button> 註冊帳號<br>
+          2. 登入後前往API Keys 頁面</button><br>
+          3. 點「Create Key」產生出一組你帳號專屬的 Key。<br>
+          4. 輸入編輯器後編輯器會暫存API KEY，但請自行備份，若遺失需重新建立。<br>
+        </div>
+        <div style="display:flex;gap:6px;align-items:center;">
+          <input id="imgeKeyInput" type="password" placeholder="貼上你的 im.ge API Key"
+            value="${savedKey}"
+            style="flex:1;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:6px 10px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:11px;outline:none;">
+          <button onclick="imgeSetKey()" class="btn btn-gold" style="font-size:11px;white-space:nowrap;">儲存</button>
+        </div>
+        <div id="imgeKeyStatus" style="font-size:10px;margin-top:4px;color:${savedKey?'#22c55e':'var(--text2)'};">${savedKey?'✅ 已設定 API Key':'尚未設定，上傳前請先儲存 Key'}</div>
+      </div>
+
+      <!-- 上傳區 -->
+      <div id="imgePaneUpload">
+        <div style="font-size:11px;color:var(--text2);background:rgba(59,130,246,.07);border:1px solid rgba(59,130,246,.2);border-radius:7px;padding:8px 12px;margin-bottom:12px;line-height:1.6;">
+          🌄 支援圖片（jpg/png/gif）。單檔最大 10MB，儲存於你自己的帳號（10GB 容量）。
+        </div>
+        <div id="imgeDropZone"
+          ondragover="event.preventDefault();this.classList.add('cb-drag-over')"
+          ondragleave="this.classList.remove('cb-drag-over')"
+          ondrop="imgeHandleDrop(event)"
+          onclick="document.getElementById('imgeFileInput').click()"
+          style="border:2px dashed var(--border);border-radius:10px;padding:24px 16px;text-align:center;cursor:pointer;transition:all .2s;margin-bottom:12px;">
+          <div style="font-size:28px;margin-bottom:6px;">📂</div>
+          <div style="font-size:13px;color:var(--text);font-weight:600;">點擊選擇或拖放圖片到這裡</div>
+          <div style="font-size:11px;color:var(--text2);margin-top:4px;">jpg · png · gif · webp　最大 10MB　可多選</div>
+        </div>
+        <input type="file" id="imgeFileInput" accept="image/*,.gif" multiple style="display:none" onchange="imgeHandleFiles(this.files)">
+        <div id="imgeQueue" style="display:flex;flex-direction:column;gap:6px;max-height:240px;overflow-y:auto;"></div>
+        <div id="imgeInsertAll" style="display:none;margin-top:10px;">
+          <button class="btn btn-gold" style="width:100%;font-size:12px;" onclick="imgeInsertAllDone()">⬇️ 全部插入編輯器</button>
+        </div>
+      </div>`;
+      document.getElementById('modalOK').style.display='none';
+      document.getElementById('modalActions').style.display='none';
+      break;
+    }
       html=`<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;gap:8px;">
         <span style="font-size:11px;color:var(--text2);flex:1;">點選圖片/影片即可插入文章使用。圖庫會儲存最新${MAX_GALLERY}項在此裝置，同裝置重新開啟仍可使用。</span>
         <span id="galCounter" style="font-size:11px;font-family:'JetBrains Mono',monospace;color:var(--gold);white-space:nowrap;background:var(--bg);border:1px solid var(--border);border-radius:5px;padding:2px 8px;">0/${MAX_GALLERY}</span>
@@ -1865,8 +1904,116 @@ function prevXvimg(){
   if(rUrl)prev.innerHTML+=`<img src="${rUrl}" style="flex:1;max-width:49%;max-height:180px;object-fit:cover;border:6px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.15);border-radius:2px;" onerror="this.style.display='none'">`;
 }
 /* ═══════════════════════════════════════════
-   CATBOX AUTO-UPLOAD
+   IM.GE AUTO UPLOAD
 ═══════════════════════════════════════════ */
+const IMGE_API='https://imge-proxy.good406441.workers.dev/';
+let imgeDoneUrls=[];
+
+function imgeGetKey(){
+  try{return localStorage.getItem('imge_api_key')||'';}catch(e){return '';}
+}
+function imgeSetKey(){
+  const el=document.getElementById('imgeKeyInput');
+  const key=el?el.value.trim():'';
+  try{localStorage.setItem('imge_api_key',key);}catch(e){}
+  const st=document.getElementById('imgeKeyStatus');
+  if(st){st.textContent=key?'✅ 已儲存 API Key':'已清除 API Key';st.style.color=key?'#22c55e':'var(--text2)';}
+  showToast(key?'✅ API Key 已儲存！':'🗑 API Key 已清除');
+}
+function imgeHandleDrop(e){
+  e.preventDefault();
+  document.getElementById('imgeDropZone').classList.remove('cb-drag-over');
+  imgeHandleFiles(e.dataTransfer.files);
+}
+function imgeHandleFiles(files){
+  if(!files||!files.length)return;
+  const key=imgeGetKey();
+  if(!key){showToast('❌ 請先設定 API Key');return;}
+  imgeDoneUrls=[];
+  const insertAll=document.getElementById('imgeInsertAll');
+  if(insertAll)insertAll.style.display='none';
+  [...files].forEach(file=>imgeUploadOne(file,key));
+}
+async function imgeUploadOne(file,key){
+  const isImg=/\.(jpe?g|png|gif|webp|bmp)$/i.test(file.name)||file.type.startsWith('image/');
+  if(!isImg){showToast(`⚠️ 不支援的格式：${file.name}`);return;}
+  if(file.size>10*1024*1024){showToast(`⚠️ 檔案超過 10MB：${file.name}`);return;}
+
+  const id='imge_'+Date.now()+'_'+Math.random().toString(36).slice(2,6);
+  const queue=document.getElementById('imgeQueue');
+  if(!queue)return;
+
+  const div=document.createElement('div');
+  div.className='cb-item';div.id=id;
+  const objUrl=URL.createObjectURL(file);
+  div.innerHTML=`<div class="cb-thumb"><img src="${objUrl}" onload="URL.revokeObjectURL(this.src)" onerror="this.parentElement.textContent='🖼'" style="width:100%;height:100%;object-fit:cover;border-radius:4px;"></div>
+  <div class="cb-info">
+    <div class="cb-name">${escHtml(file.name)}</div>
+    <div class="cb-status" id="${id}_st" style="color:var(--text2);">⬆️ 上傳中…</div>
+    <div class="cb-bar-wrap"><div class="cb-bar" id="${id}_bar"></div></div>
+    <div id="${id}_result"></div>
+  </div>`;
+  queue.appendChild(div);
+  queue.scrollTop=queue.scrollHeight;
+
+  const st=document.getElementById(id+'_st');
+  const bar=document.getElementById(id+'_bar');
+  const result=document.getElementById(id+'_result');
+
+  try{
+    if(bar)bar.style.width='50%';
+    const fd=new FormData();
+    fd.append('image',file);
+
+    const res=await fetch(IMGE_API,{
+      method:'POST',
+      headers:{
+        'X-Api-Key':key
+      },
+      body:fd
+    });
+    const json=await res.json();
+
+    if(json.success&&json.data&&json.data.direct_url){
+      const url=json.data.direct_url;
+      const viewerUrl=json.data.viewer_url||url;
+      if(bar){bar.style.width='100%';bar.style.background='#22c55e';}
+      if(st){st.textContent='✅ 上傳成功！';st.style.color='#22c55e';}
+      if(result){
+        result.innerHTML=`<div class="cb-url-row">
+          <span class="cb-url-box" title="${url}" onclick="navigator.clipboard&&navigator.clipboard.writeText('${url}').then(()=>showToast('✅ 已複製連結'))">${url}</span>
+          <button class="cb-insert-btn" onclick="imgeInsertOne('${url}','${viewerUrl}')">插入</button>
+        </div>`;
+      }
+      addToGallery(url,'img');
+      imgeDoneUrls.push({url,viewerUrl});
+      const insertAll=document.getElementById('imgeInsertAll');
+      if(insertAll)insertAll.style.display='block';
+    } else {
+      const errMsg=(json.data&&json.data.error&&json.data.error.message)||json.error||'上傳失敗';
+      if(bar){bar.style.width='100%';bar.style.background='#ef4444';}
+      if(st){st.textContent=`❌ ${errMsg}`;st.style.color='#ef4444';}
+    }
+  }catch(err){
+    if(bar){bar.style.width='100%';bar.style.background='#ef4444';}
+    if(st){st.textContent=`❌ 錯誤：${err.message}`;st.style.color='#ef4444';}
+  }
+}
+function imgeInsertOne(url,viewerUrl){
+  const code=viewerUrl?`[url=${viewerUrl}][img]${url}[/img][/url]\n`:`[img]${url}[/img]\n`;
+  insertAtCursor(code);
+  showToast('✅ 已插入！');
+}
+function imgeInsertAllDone(){
+  if(!imgeDoneUrls.length){showToast('⚠️ 尚無完成的上傳');return;}
+  let code='';
+  imgeDoneUrls.forEach(({url,viewerUrl})=>{
+    code+=viewerUrl?`[url=${viewerUrl}][img]${url}[/img][/url]\n`:`[img]${url}[/img]\n`;
+  });
+  insertAtCursor(code);
+  showToast(`✅ 已插入 ${imgeDoneUrls.length} 張圖片！`);
+  closeModal();
+}
 const CATBOX_API='https://catbox-proxy.good406441.workers.dev/';
 const CATBOX_USERHASH='1955d4f3fdde85910d8657ba8';
 let cbDoneUrls=[]; // finished uploads ready to insert
