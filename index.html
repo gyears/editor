@@ -1367,8 +1367,8 @@ const COLORS=['#000000','#ffffff','#ef4444','#f97316','#eab308','#22c55e','#3b82
    BUILD LEFT PANEL
 ═══════════════════════════════════════════ */
 function buildLeftPanel(){
-  const SYM_HINT=lang==='zh'?'⚠ 內容不可含 & = ` \' " ( ) + - / < > []':'⚠ No special chars: & = ` \' " ( ) + - / < > []';
-  const NOTE_HINT=lang==='zh'?'⚠ 僅限一行，不可含特殊符號':'⚠ One line only, no special chars';
+  const SYM_HINT=lang==='zh'?'⚠ 內容不可含 & = ` \' " ( ) + - / < >，[]可用於嵌套語法':'⚠ No special chars: & = ` \' " ( ) + - / < > ([] allowed for nested BBCode)';
+  const NOTE_HINT=lang==='zh'?'⚠ 僅限一行，不可含特殊符號（& = ` \' " ( ) + - / < >）':'⚠ One line only, no special chars';
   const BTN_HINT=lang==='zh'?'⚠ URL不可含 & 符號':'⚠ URL cannot contain &';
   const panel=document.getElementById('leftPanel');
   panel.innerHTML='';
@@ -1702,6 +1702,7 @@ function openModal(tag){
       document.getElementById('modalActions').style.display='none';
       break;
     }
+    case 'gallery':
       html=`<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;gap:8px;">
         <span style="font-size:11px;color:var(--text2);flex:1;">點選圖片/影片即可插入文章使用。圖庫會儲存最新${MAX_GALLERY}項在此裝置，同裝置重新開啟仍可使用。</span>
         <span id="galCounter" style="font-size:11px;font-family:'JetBrains Mono',monospace;color:var(--gold);white-space:nowrap;background:var(--bg);border:1px solid var(--border);border-radius:5px;padding:2px 8px;">0/${MAX_GALLERY}</span>
@@ -2313,8 +2314,21 @@ function updatePreview(){
   // xhr
   h=h.replace(/\[xhr\]x\[\/xhr\]/g,'<hr class="xhr-line">');
   // 禁止符號檢查（模擬論壇失效行為）
-  const FORBIDDEN=/[&=`'"()+\-\/<>\[\]]/;
-  const hasForbidden=str=>FORBIDDEN.test(str);
+  const FORBIDDEN=/[&=`'"()+\-\/<>]/;
+  // 檢查內容是否含有違規字元
+  // [] 符號特別處理：若含有 [ 或 ]，先把所有合法配對 BBCode 標籤移除，
+  // 移除後若還有殘留的 [ 或 ] 才視為違規
+  const hasForbidden=str=>{
+    if(FORBIDDEN.test(str))return true;
+    if(str.includes('[')&&str.includes(']')){
+      // 移除所有合法 BBCode 標籤對（含屬性）後，檢查是否還有殘留 [ 或 ]
+      const stripped=str.replace(/\[[a-zA-Z\/][a-zA-Z0-9]*(?:=[^\]]+)?\]/g,'');
+      if(stripped.includes('[')||stripped.includes(']'))return true;
+    } else if(str.includes('[')||str.includes(']')){
+      return true; // 單邊括號，非法
+    }
+    return false;
+  };
   // 失效時原樣輸出（還原 HTML entity 回原始字元供顯示）
   const failRaw=(tag,raw)=>`[${tag}]${raw}[/${tag}]`;
   const failRawAttr=(tag,attr,raw)=>`[${tag}=${attr}]${raw}[/${tag}]`;
