@@ -725,7 +725,7 @@ function renderGallery(container){
     const shortName=g.url.split('/').pop().split('?')[0].slice(0,20)||g.url.slice(0,20);
     if(g.type==='img'){
       d.innerHTML=`<img src="${g.url}" style="width:100%;height:100%;object-fit:cover;display:block;" onerror="this.parentElement.innerHTML='<div class=\\'gal-placeholder\\'><span style=\\'font-size:26px;\\'>🖼</span><span>${shortName}</span></div>'+\`${delBtn}\`">${delBtn}<div class="gal-label">${shortName}</div>`;
-      d.onclick=()=>{insertAtCursor(`[ximg]${g.url}[/ximg]\n`);closeModal();};
+      d.onclick=()=>{closeModal();galInsert(i);};
     } else if(g.type==='vid'){
       const vidIdx='gvc'+i+'_'+Date.now();
       d.innerHTML=`<canvas id="${vidIdx}" style="width:100%;height:100%;display:block;background:#111;"></canvas><div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:26px;pointer-events:none;text-shadow:0 1px 4px #000;">▶</div>${delBtn}<div class="gal-label">${shortName}</div>`;
@@ -1491,7 +1491,7 @@ function openModal(tag){
     case 'xspoiler':
       html=`<div style="font-size:11px;color:#e06c75;background:rgba(224,108,117,.08);border:1px solid rgba(224,108,117,.25);border-radius:6px;padding:7px 11px;margin-bottom:10px;">⚠️ 按鈕文字與內容不可含有這些符號：<b style="font-family:'JetBrains Mono',monospace;">&amp; = \` ' " ( ) + - / &lt; &gt; [ ]</b>，否則語法失效。</div>
       <label>按鈕文字（點擊後展開）</label><input id="f1" placeholder="例：點我查看" value="點我查看">
-      <label>劇透內容（文字或圖片BBCode）</label><textarea id="f2">${esc(selVal)}</textarea>`;break;
+      <label>劇透內容（文字）</label><textarea id="f2">${esc(selVal)}</textarea>`;break;
     case 'xsmall':
       html=`<div style="font-size:11px;color:#e06c75;background:rgba(224,108,117,.08);border:1px solid rgba(224,108,117,.25);border-radius:6px;padding:7px 11px;margin-bottom:10px;">⚠️ 內容不可含有這些符號：<b style="font-family:'JetBrains Mono',monospace;">&amp; = \` ' " ( ) + - / &lt; &gt; [ ]</b>，否則語法失效。</div>
       <label>小字補充內容</label><input id="f1" value="${esc(selVal)}" placeholder="例：資料來源：會員自行整理，僅供參考。">`;break;
@@ -1569,13 +1569,13 @@ function openModal(tag){
       <!-- 雙頁美圖 (xvimg) -->
       <div id="ximgDouble" style="display:none;">
         <div style="font-size:11px;color:var(--text2);background:rgba(240,180,41,.07);border:1px solid rgba(240,180,41,.2);border-radius:6px;padding:8px 11px;margin-bottom:10px;line-height:1.6;">
-          📖 貼入兩張圖的 Postimages <b>論壇外連</b>代碼。
+          📖 分別貼入兩張圖的Postimages<b>論壇外連</b>連結或im.ge的BB Code連結。
         </div>
         <label>左頁</label>
-        <div style="font-size:10px;color:var(--text2);margin-bottom:4px;">💡 Postimages 請選擇「<b>論壇外链</b>」格式</div>
+        <div style="font-size:10px;color:var(--text2);margin-bottom:4px;">💡 Postimages 請選擇論壇外链，im.ge請選擇BB Code</div>
         <textarea id="xvLeft" rows="3" placeholder="[url=https://postimages.org/][img]https://i.postimg.cc/xxx/left.jpg[/img][/url]" oninput="prevXvimg()" style="font-family:'JetBrains Mono',monospace;font-size:11px;width:100%;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:7px;color:var(--text);resize:vertical;"></textarea>
         <label style="margin-top:8px;">右頁</label>
-        <div style="font-size:10px;color:var(--text2);margin-bottom:4px;">💡 Postimages 請選擇「<b>論壇外链</b>」格式</div>
+        <div style="font-size:10px;color:var(--text2);margin-bottom:4px;">💡 Postimages 請選擇論壇外链，im.ge請選擇BB Code</div>
         <textarea id="xvRight" rows="3" placeholder="[url=https://postimages.org/][img]https://i.postimg.cc/xxx/right.jpg[/img][/url]" oninput="prevXvimg()" style="font-family:'JetBrains Mono',monospace;font-size:11px;width:100%;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:7px;color:var(--text);resize:vertical;"></textarea>
         <div id="xvErr" style="font-size:11px;color:#ef4444;min-height:12px;margin-top:4px;"></div>
         <div id="xvPrev" style="margin-top:10px;display:flex;gap:4px;"></div>
@@ -2315,18 +2315,15 @@ function updatePreview(){
   h=h.replace(/\[xhr\]x\[\/xhr\]/g,'<hr class="xhr-line">');
   // 禁止符號檢查（模擬論壇失效行為）
   const FORBIDDEN=/[&=`'"()+\-\/<>]/;
-  // 檢查內容是否含有違規字元
-  // [] 符號特別處理：若含有 [ 或 ]，先把所有合法配對 BBCode 標籤移除，
-  // 移除後若還有殘留的 [ 或 ] 才視為違規
   const hasForbidden=str=>{
-    if(FORBIDDEN.test(str))return true;
-    if(str.includes('[')&&str.includes(']')){
-      // 移除所有合法 BBCode 標籤對（含屬性）後，檢查是否還有殘留 [ 或 ]
-      const stripped=str.replace(/\[[a-zA-Z\/][a-zA-Z0-9]*(?:=[^\]]+)?\]/g,'');
-      if(stripped.includes('[')||stripped.includes(']'))return true;
-    } else if(str.includes('[')||str.includes(']')){
-      return true; // 單邊括號，非法
-    }
+    // 先移除所有 BBCode 標籤（[xxx] 格式）
+    let stripped=str.replace(/\[[^\]]*\]/g,'');
+    // 再移除已被渲染的 HTML 標籤（<xxx> 格式），因為前面的處理已把部分 BBCode 轉成 HTML
+    stripped=stripped.replace(/<[^>]*>/g,'');
+    // 檢查剩餘純文字是否含違規符號
+    if(FORBIDDEN.test(stripped))return true;
+    // 檢查裸露的 [ 或 ]
+    if(stripped.includes('[')||stripped.includes(']'))return true;
     return false;
   };
   // 失效時原樣輸出（還原 HTML entity 回原始字元供顯示）
