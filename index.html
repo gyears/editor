@@ -139,7 +139,37 @@ body.light-theme .float-btn-gallery:hover,body.light-theme .float-btn-draft:hove
 .gallery-item .gal-label{position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.6);color:#fff;font-size:9px;padding:3px 5px;text-overflow:ellipsis;overflow:hidden;white-space:nowrap;text-align:center;pointer-events:none;}
 .gallery-empty{color:var(--text2);font-size:12px;text-align:center;padding:24px 10px;grid-column:1/-1;line-height:1.6;}
 
-/* ── CATBOX UPLOAD ── */
+/* ── 文字特效 ── */
+@keyframes xneonAnim{0%,100%{text-shadow:0 0 6px #7df9ff,0 0 12px #7df9ff,0 0 20px #7df9ff;}50%{text-shadow:0 0 10px #7df9ff,0 0 25px #7df9ff,0 0 40px #7df9ff,0 0 60px #7df9ff;}}
+@keyframes xrainbowAnim{0%{color:#f00;}14%{color:#f90;}28%{color:#ff0;}42%{color:#0f0;}57%{color:#00f;}71%{color:#8b00ff;}85%{color:#f0f;}100%{color:#f00;}}
+@keyframes xggoldAnim{0%{background-position:0% 50%;}100%{background-position:200% 50%;}}
+@keyframes xfloatAnim{0%,100%{transform:translateY(0);}50%{transform:translateY(-6px);}}
+@keyframes xshakeAnim{0%,100%{transform:translateX(0);}15%{transform:translateX(-5px);}30%{transform:translateX(5px);}45%{transform:translateX(-4px);}60%{transform:translateX(4px);}75%{transform:translateX(-2px);}90%{transform:translateX(2px);}}
+#preview .xneon-text,#previewOverlayBody .xneon-text{
+  color:#fff;font-weight:700;
+  animation:xneonAnim 1.5s ease-in-out infinite;display:inline-block;
+  background:rgba(125,249,255,.12);border-radius:4px;padding:0 4px;
+}
+#preview .xrainbow-text,#previewOverlayBody .xrainbow-text{
+  font-weight:700;animation:xrainbowAnim 2s linear infinite;display:inline-block;
+}
+#preview .xggold-text,#previewOverlayBody .xggold-text{
+  background:linear-gradient(90deg,#b8860b,#fff9a0,#f0b429,#fff,#f0b429,#fff9a0,#b8860b);
+  background-size:200% auto;
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  font-weight:700;animation:xggoldAnim 2s linear infinite;display:inline-block;
+}
+#preview .xfloat-text,#previewOverlayBody .xfloat-text{
+  color:inherit;font-weight:700;
+  animation:xfloatAnim 2s ease-in-out infinite;display:inline-block;
+}
+#preview .xshake-text,#previewOverlayBody .xshake-text{
+  color:#000;font-weight:700;display:inline-block;cursor:pointer;
+}
+#preview .xshake-text:hover,#previewOverlayBody .xshake-text:hover,
+#preview .xshake-text.xshake-tap,#previewOverlayBody .xshake-text.xshake-tap{
+  animation:xshakeAnim .5s ease-in-out;
+}
 .cb-drag-over{border-color:var(--gold)!important;background:rgba(240,180,41,.06)!important;}
 .cb-item{display:flex;align-items:center;gap:10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 10px;}
 .cb-thumb{width:48px;height:48px;border-radius:6px;object-fit:cover;flex-shrink:0;background:var(--bg);display:flex;align-items:center;justify-content:center;font-size:22px;overflow:hidden;}
@@ -987,6 +1017,15 @@ editor.addEventListener('input',e=>{
     if(before.endsWith(']')) tryAutoClose();
   }
 });
+// 搖晃特效：手機無 hover，改用點擊觸發動畫（委派事件，重繪預覽後仍有效）
+document.addEventListener('click',e=>{
+  const el=e.target.closest('.xshake-text');
+  if(!el)return;
+  el.classList.remove('xshake-tap');
+  void el.offsetWidth; // 強制重新觸發動畫
+  el.classList.add('xshake-tap');
+  el.addEventListener('animationend',()=>el.classList.remove('xshake-tap'),{once:true});
+});
 let savedSel={start:0,end:0,text:''};
 // Track if the last change was a cut operation
 let lastWasCut=false;
@@ -1000,6 +1039,7 @@ const AUTO_CLOSE_TAGS=[
   'b','i','u','strike','xgold','xcenter','xgban','xnote','xwarn',
   'xblue','xgreen','xred','xinfo','xglass','xsmall','xquote','quote',
   'xtag','xrate','xbtn','xspoiler','xcard','ximg','ovimg','oimg','xvimg-l','xvimg-r','xmp4','xvmp4',
+  'xneon','xrainbow','xggold','xfloat','xshake',
   'xmp3','xsound','xsendvid','xmap','xmaplink','xyoutube','xsyoutube',
   'xtiktok','hide','sell','fly','move','code','url',
   'size','color','backcolor','align','xleft','xright',
@@ -1379,6 +1419,7 @@ function buildLeftPanel(){
       {tag:'xcenter',icon:'⬛',label:lang==='zh'?'置中標題':'Center Title',code:'xcenter',wrap:true,hint:SYM_HINT},
       {tag:'xgban',icon:'🟨',label:lang==='zh'?'金色橫幅':'Gold Banner',code:'xgban',wrap:true,hint:SYM_HINT},
       {tag:'xsmall',icon:'🔡',label:lang==='zh'?'小字補充':'Small Text',code:'xsmall',wrap:true},
+      {tag:'textfx',icon:'✨',label:lang==='zh'?'文字特效':'Text FX',code:'特效',modal:true},
     ]},
     {key:'callout',title:lang==='zh'?'💡 提示框':'💡 Callouts',tags:[
       {tag:'xnote',icon:'📌',label:lang==='zh'?'重點框（黃）':'Note (Yellow)',code:'xnote',wrap:true,hint:NOTE_HINT},
@@ -1470,7 +1511,7 @@ function openModal(tag){
     xgold:'🏷 章節標題',xcenter:'⬛ 置中標題',xgban:'🟨 金色橫幅',
     xnote:'📌 重點框',xwarn:'⚠️ 警告框',xblue:'🔵 技術提示',xgreen:'✅ 成功訊息',xred:'🚫 禁止事項',xinfo:'ℹ️ 蘋果藍資訊框',xglass:'🪟 蘋果灰玻璃感',
     xcard:'🃏 卡片',quote:'「」引用框 type2（框格）',xquote:'｜引用框 type1（斜體）',
-    imge:'🌄 im.ge 自動上傳',xrate:'⭐ 評分',xbtn:'🔘 按鈕連結',
+    textfx:'✨ 文字特效',xrate:'⭐ 評分',xbtn:'🔘 按鈕連結',
     xyoutube:'▶️ YouTube 長影片',xsyoutube:'📱 YouTube直立影片',xmp4:'🎥 MP4 影片',xvmp4:'📹 直立 MP4',xmp3:'🎵 MP3 音樂',xtiktok:'🎶 TikTok',xsound:'🔊 SoundCloud',xsendvid:'📺 Sendvid 影片',xmap:'🗺 地圖座標（xmap）',xmaplink:'📍 地點名稱（xmaplink）',
     xspoiler:'🔽 劇透文字（xspoiler）',xsmall:'🔡 小字補充（xsmall）',ximg:'🖼 插入圖片',postimages:'📤 Postimages 半自動上傳',catbox:'🐱 貓盒 Catbox 上傳',
     dialog:'🗨 對話泡泡',xtable:'📋 表格',hide:'🔐 加密內容',sell:'💰 販售（sell）',
@@ -1491,7 +1532,7 @@ function openModal(tag){
     case 'xspoiler':
       html=`<div style="font-size:11px;color:#e06c75;background:rgba(224,108,117,.08);border:1px solid rgba(224,108,117,.25);border-radius:6px;padding:7px 11px;margin-bottom:10px;">⚠️ 按鈕文字與內容不可含有這些符號：<b style="font-family:'JetBrains Mono',monospace;">&amp; = \` ' " ( ) + - / &lt; &gt; [ ]</b>，否則語法失效。</div>
       <label>按鈕文字（點擊後展開）</label><input id="f1" placeholder="例：點我查看" value="點我查看">
-      <label>劇透內容（文字）</label><textarea id="f2">${esc(selVal)}</textarea>`;break;
+      <label>劇透內容（文字或圖片BBCode）</label><textarea id="f2">${esc(selVal)}</textarea>`;break;
     case 'xsmall':
       html=`<div style="font-size:11px;color:#e06c75;background:rgba(224,108,117,.08);border:1px solid rgba(224,108,117,.25);border-radius:6px;padding:7px 11px;margin-bottom:10px;">⚠️ 內容不可含有這些符號：<b style="font-family:'JetBrains Mono',monospace;">&amp; = \` ' " ( ) + - / &lt; &gt; [ ]</b>，否則語法失效。</div>
       <label>小字補充內容</label><input id="f1" value="${esc(selVal)}" placeholder="例：資料來源：會員自行整理，僅供參考。">`;break;
@@ -1569,13 +1610,13 @@ function openModal(tag){
       <!-- 雙頁美圖 (xvimg) -->
       <div id="ximgDouble" style="display:none;">
         <div style="font-size:11px;color:var(--text2);background:rgba(240,180,41,.07);border:1px solid rgba(240,180,41,.2);border-radius:6px;padding:8px 11px;margin-bottom:10px;line-height:1.6;">
-          📖 分別貼入兩張圖的Postimages<b>論壇外連</b>連結或im.ge的BB Code連結。
+          📖  分別貼入兩張圖的Postimages論壇外連連結或im.ge的BB Code連結。。
         </div>
         <label>左頁</label>
-        <div style="font-size:10px;color:var(--text2);margin-bottom:4px;">💡 Postimages 請選擇論壇外链，im.ge請選擇BB Code</div>
+        <div style="font-size:10px;color:var(--text2);margin-bottom:4px;">💡  Postimages 請選擇論壇外链，im.ge請選擇BB Code</div>
         <textarea id="xvLeft" rows="3" placeholder="[url=https://postimages.org/][img]https://i.postimg.cc/xxx/left.jpg[/img][/url]" oninput="prevXvimg()" style="font-family:'JetBrains Mono',monospace;font-size:11px;width:100%;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:7px;color:var(--text);resize:vertical;"></textarea>
         <label style="margin-top:8px;">右頁</label>
-        <div style="font-size:10px;color:var(--text2);margin-bottom:4px;">💡 Postimages 請選擇論壇外链，im.ge請選擇BB Code</div>
+        <div style="font-size:10px;color:var(--text2);margin-bottom:4px;">💡  Postimages 請選擇論壇外链，im.ge請選擇BB Code</div>
         <textarea id="xvRight" rows="3" placeholder="[url=https://postimages.org/][img]https://i.postimg.cc/xxx/right.jpg[/img][/url]" oninput="prevXvimg()" style="font-family:'JetBrains Mono',monospace;font-size:11px;width:100%;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:7px;color:var(--text);resize:vertical;"></textarea>
         <div id="xvErr" style="font-size:11px;color:#ef4444;min-height:12px;margin-top:4px;"></div>
         <div id="xvPrev" style="margin-top:10px;display:flex;gap:4px;"></div>
@@ -1700,6 +1741,41 @@ function openModal(tag){
       </div>`;
       document.getElementById('modalOK').style.display='none';
       document.getElementById('modalActions').style.display='none';
+      break;
+    }
+    case 'textfx':{
+      const selVal2=savedSel&&savedSel.text?savedSel.text:'';
+      html=`
+      <div style="font-size:11px;color:#e06c75;background:rgba(224,108,117,.08);border:1px solid rgba(224,108,117,.25);border-radius:6px;padding:7px 11px;margin-bottom:12px;">
+        ⚠️ 內容不可含有這些符號：<b style="font-family:'JetBrains Mono',monospace;">&amp; = \` ' " ( ) + - / &lt; &gt; [ ]，否則語法失效</b>。
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;">
+        <button onclick="textfxSelect('xneon')" id="fxBtn_xneon" style="padding:14px 8px;border-radius:8px;border:2px solid var(--border);background:var(--surface2);cursor:pointer;font-family:inherit;transition:all .2s;">
+          <div style="font-size:18px;margin-bottom:4px;background:linear-gradient(90deg,#f0f,#0ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-weight:700;">霓虹</div>
+          <div style="font-size:10px;color:var(--text2);">[xneon]</div>
+        </button>
+        <button onclick="textfxSelect('xrainbow')" id="fxBtn_xrainbow" style="padding:14px 8px;border-radius:8px;border:2px solid var(--border);background:var(--surface2);cursor:pointer;font-family:inherit;transition:all .2s;">
+          <div style="font-size:18px;margin-bottom:4px;background:linear-gradient(90deg,#f00,#f90,#ff0,#0f0,#00f,#f0f);-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-weight:700;">彩虹</div>
+          <div style="font-size:10px;color:var(--text2);">[xrainbow]</div>
+        </button>
+        <button onclick="textfxSelect('xggold')" id="fxBtn_xggold" style="padding:14px 8px;border-radius:8px;border:2px solid var(--border);background:var(--surface2);cursor:pointer;font-family:inherit;transition:all .2s;">
+          <div style="font-size:18px;margin-bottom:4px;background:linear-gradient(90deg,#f0b429,#fff,#f0b429);-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-weight:700;">金光閃閃</div>
+          <div style="font-size:10px;color:var(--text2);">[xggold]</div>
+        </button>
+        <button onclick="textfxSelect('xfloat')" id="fxBtn_xfloat" style="padding:14px 8px;border-radius:8px;border:2px solid var(--border);background:var(--surface2);cursor:pointer;font-family:inherit;transition:all .2s;">
+          <div style="font-size:18px;margin-bottom:4px;animation:none;color:var(--text);">飄動</div>
+          <div style="font-size:10px;color:var(--text2);">[xfloat]</div>
+        </button>
+        <button onclick="textfxSelect('xshake')" id="fxBtn_xshake" style="padding:14px 8px;border-radius:8px;border:2px solid var(--border);background:var(--surface2);cursor:pointer;font-family:inherit;transition:all .2s;">
+          <div style="font-size:16px;margin-bottom:4px;display:inline-block;background:#fff;color:#000;font-weight:700;padding:2px 10px;border-radius:4px;">搖晃</div>
+          <div style="font-size:10px;color:var(--text2);">[xshake]</div>
+        </button>
+      </div>
+      <label>文字內容</label>
+      <input id="fxText" value="${esc(selVal2)}" placeholder="輸入文字內容">`;
+      document.getElementById('modalOK').textContent='插入';
+      window._textfxTag='xneon';
+      setTimeout(()=>{ textfxSelect('xneon'); },30);
       break;
     }
     case 'gallery':
@@ -1856,6 +1932,16 @@ function prevImgSingle(){
   const url=extractImgUrl(raw);
   if(!url){d.innerHTML='';return;}
   d.innerHTML=`<img src="${url}" style="max-width:80%;max-height:160px;border-radius:5px;border:6px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.15);" onerror="this.style.display='none'">`;
+}
+
+function textfxSelect(tag){
+  window._textfxTag=tag;
+  ['xneon','xrainbow','xggold','xfloat','xshake'].forEach(t=>{
+    const btn=document.getElementById('fxBtn_'+t);
+    if(!btn)return;
+    btn.style.borderColor=t===tag?'var(--gold)':'var(--border)';
+    btn.style.background=t===tag?'rgba(240,180,41,.1)':'var(--surface2)';
+  });
 }
 
 function ximgSetType(type){
@@ -2256,7 +2342,7 @@ function confirmInsert(){
       break;}
     case 'hide':{const num=String(parseInt(g('f1')||'0',10));const type_=g('f2');const cnt=g('f3');code=`[hide=${num},${type_}]${cnt}[/hide]\n`;break;}
     case 'sell':{const amt=String(parseInt(g('f1')||'0',10));const cnt=g('f2');code=`[sell=${amt}]${cnt}[/sell]\n`;break;}
-    case 'size':{const s=g('f1');if(!s){closeModal();return;}const txt=savedSel.text||'文字';code=`[size=${s}]${txt}[/size]`;break;}
+    case 'textfx':{const tag=window._textfxTag||'xneon';const txt=g('fxText');if(!txt){showToast('❌ 請輸入文字');return;}code=`[${tag}]${txt}[/${tag}]\n`;break;}
     case 'colorpicker':{const c=selectedColor;const txt=savedSel.text||'文字';code=`[${colorModalTag}=${c}]${txt}[/${colorModalTag}]`;break;}
   }
   if(code){insertAtCursor(code);showToast(t('insert_ok'));}
@@ -2345,7 +2431,11 @@ function updatePreview(){
     ['quote',c=>`<div class="quote-box">${c}</div>`],
     ['xtag',c=>hasForbidden(c)?failRaw('xtag',c):`<span class="xtag-pill">${c}</span>`],
     ['xrate',c=>hasForbidden(c)?failRaw('xrate',c):`<span class="xrate-badge">★ ${c} / 10</span>`],
-    ['xsmall',c=>hasForbidden(c)?failRaw('xsmall',c):`<span class="xsmall-text">${c}</span>`],
+    ['xneon',c=>hasForbidden(c)?failRaw('xneon',c):`<span class="xneon-text">${c}</span>`],
+    ['xrainbow',c=>hasForbidden(c)?failRaw('xrainbow',c):`<span class="xrainbow-text">${c}</span>`],
+    ['xggold',c=>hasForbidden(c)?failRaw('xggold',c):`<span class="xggold-text">${c}</span>`],
+    ['xfloat',c=>hasForbidden(c)?failRaw('xfloat',c):`<span class="xfloat-text">${c}</span>`],
+    ['xshake',c=>hasForbidden(c)?failRaw('xshake',c):`<span class="xshake-text">${c}</span>`],
     ['ximg',c=>`<img class="forum-img ximg-img" src="${c}" onerror="this.style.display='none'">`],
     ['ovimg',c=>`<img class="forum-img ovimg-img" src="${c}" onerror="this.style.display='none'">`],
     ['oimg',c=>`<img class="forum-img oimg-img" src="${c}" onerror="this.style.display='none'">`],    ['img',c=>`<img class="forum-img" src="${c}" onerror="this.style.display='none'">`],
