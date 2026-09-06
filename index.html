@@ -170,6 +170,31 @@ body.light-theme .float-btn-gallery:hover,body.light-theme .float-btn-draft:hove
 #preview .xshake-text.xshake-tap,#previewOverlayBody .xshake-text.xshake-tap{
   animation:xshakeAnim .5s ease-in-out;
 }
+/* ── 跑馬燈 xmove/omove（連續循環跑馬，含邊緣淡出） ── */
+#preview .xmove-box,#previewOverlayBody .xmove-box{
+  display:block;overflow:hidden;border:1px solid #f0b429;border-radius:8px;
+  padding:9px 0;margin:8px 0;cursor:pointer;-webkit-user-select:none;user-select:none;
+  box-shadow:0 2px 8px rgba(0,0,0,.15);
+}
+#preview .xmove-box.xmove-gold,#previewOverlayBody .xmove-box.xmove-gold{background:linear-gradient(180deg,#fdf3d7,#f5e3a3 55%,#eed88a);}
+#preview .xmove-box.xmove-black,#previewOverlayBody .xmove-box.xmove-black{background:linear-gradient(180deg,#232323,#000 55%,#000);}
+#preview .xmove-viewport,#previewOverlayBody .xmove-viewport{
+  overflow:hidden;width:100%;
+  -webkit-mask-image:linear-gradient(90deg,transparent 0,#000 28px,#000 calc(100% - 28px),transparent 100%);
+  mask-image:linear-gradient(90deg,transparent 0,#000 28px,#000 calc(100% - 28px),transparent 100%);
+}
+#preview .xmove-track,#previewOverlayBody .xmove-track{
+  display:flex;align-items:center;width:max-content;will-change:transform;
+}
+#preview .xmove-item,#previewOverlayBody .xmove-item{
+  display:flex;align-items:center;white-space:nowrap;flex-shrink:0;
+  padding:0 34px;font-weight:700;font-size:15px;
+}
+#preview .xmove-box.xmove-gold .xmove-item,#previewOverlayBody .xmove-box.xmove-gold .xmove-item{color:#000;}
+#preview .xmove-box.xmove-black .xmove-item,#previewOverlayBody .xmove-box.xmove-black .xmove-item{color:#f0b429;}
+#preview .xmove-track.xmove-paused,#previewOverlayBody .xmove-track.xmove-paused{animation-play-state:paused;}
+#preview .xmove-star,#previewOverlayBody .xmove-star{margin-right:7px;font-size:13px;}
+#preview .xmove-item img,#previewOverlayBody .xmove-item img{max-height:220px;width:auto;max-width:none;vertical-align:middle;display:inline-block;border-radius:8px;border:5px solid #fff;box-shadow:0 2px 10px rgba(0,0,0,.3);margin:6px 0;}
 .cb-drag-over{border-color:var(--gold)!important;background:rgba(240,180,41,.06)!important;}
 .cb-item{display:flex;align-items:center;gap:10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 10px;}
 .cb-thumb{width:48px;height:48px;border-radius:6px;object-fit:cover;flex-shrink:0;background:var(--bg);display:flex;align-items:center;justify-content:center;font-size:22px;overflow:hidden;}
@@ -1026,6 +1051,20 @@ document.addEventListener('click',e=>{
   el.classList.add('xshake-tap');
   el.addEventListener('animationend',()=>el.classList.remove('xshake-tap'),{once:true});
 });
+// 跑馬燈：滑鼠移上去就暫停跑動，移開後繼續跑（不需點擊）
+document.addEventListener('pointerover',e=>{
+  const box=e.target.closest('.xmove-box');
+  if(!box)return;
+  const track=box.querySelector('.xmove-track');
+  if(track)track.classList.add('xmove-paused');
+});
+document.addEventListener('pointerout',e=>{
+  const box=e.target.closest('.xmove-box');
+  if(!box)return;
+  if(box.contains(e.relatedTarget))return; // 還在同一個跑馬燈範圍內移動，不算離開
+  const track=box.querySelector('.xmove-track');
+  if(track)track.classList.remove('xmove-paused');
+});
 let savedSel={start:0,end:0,text:''};
 // Track if the last change was a cut operation
 let lastWasCut=false;
@@ -1420,6 +1459,7 @@ function buildLeftPanel(){
       {tag:'xgban',icon:'🟨',label:lang==='zh'?'金色橫幅':'Gold Banner',code:'xgban',wrap:true,hint:SYM_HINT},
       {tag:'xsmall',icon:'🔡',label:lang==='zh'?'小字補充':'Small Text',code:'xsmall',wrap:true},
       {tag:'textfx',icon:'✨',label:lang==='zh'?'文字特效':'Text FX',code:'特效',modal:true},
+      {tag:'xmarquee',icon:'📜',label:lang==='zh'?'跑馬燈':'Marquee',code:'xmove/omove',modal:true},
     ]},
     {key:'callout',title:lang==='zh'?'💡 提示框':'💡 Callouts',tags:[
       {tag:'xnote',icon:'📌',label:lang==='zh'?'重點框（黃）':'Note (Yellow)',code:'xnote',wrap:true,hint:NOTE_HINT},
@@ -1511,7 +1551,7 @@ function openModal(tag){
     xgold:'🏷 章節標題',xcenter:'⬛ 置中標題',xgban:'🟨 金色橫幅',
     xnote:'📌 重點框',xwarn:'⚠️ 警告框',xblue:'🔵 技術提示',xgreen:'✅ 成功訊息',xred:'🚫 禁止事項',xinfo:'ℹ️ 蘋果藍資訊框',xglass:'🪟 蘋果灰玻璃感',
     xcard:'🃏 卡片',quote:'「」引用框 type2（框格）',xquote:'｜引用框 type1（斜體）',
-    textfx:'✨ 文字特效',xrate:'⭐ 評分',xbtn:'🔘 按鈕連結',
+    textfx:'✨ 文字特效',xmarquee:'📜 跑馬燈',xrate:'⭐ 評分',xbtn:'🔘 按鈕連結',
     xyoutube:'▶️ YouTube 長影片',xsyoutube:'📱 YouTube直立影片',xmp4:'🎥 MP4 影片',xvmp4:'📹 直立 MP4',xmp3:'🎵 MP3 音樂',xtiktok:'🎶 TikTok',xsound:'🔊 SoundCloud',xsendvid:'📺 Sendvid 影片',xmap:'🗺 地圖座標（xmap）',xmaplink:'📍 地點名稱（xmaplink）',
     xspoiler:'🔽 劇透文字（xspoiler）',xsmall:'🔡 小字補充（xsmall）',ximg:'🖼 插入圖片',postimages:'📤 Postimages 半自動上傳',catbox:'🐱 貓盒 Catbox 上傳',
     dialog:'🗨 對話泡泡',xtable:'📋 表格',hide:'🔐 加密內容',sell:'💰 販售（sell）',
@@ -1778,6 +1818,28 @@ function openModal(tag){
       setTimeout(()=>{ textfxSelect('xneon'); },30);
       break;
     }
+    case 'xmarquee':{
+      const selVal3=savedSel&&savedSel.text?savedSel.text:'';
+      html=`
+      <div style="font-size:11px;color:var(--text2);background:rgba(240,180,41,.07);border:1px solid rgba(240,180,41,.2);border-radius:6px;padding:8px 11px;margin-bottom:12px;line-height:1.6;">
+        📜 選擇風格，並輸入內容。
+      </div>
+      <div style="display:flex;gap:8px;margin-bottom:14px;">
+        <button onclick="marqueeSelectStyle('xmove')" id="mqBtn_xmove" style="flex:1;padding:14px 8px;border-radius:8px;border:2px solid var(--border);cursor:pointer;font-family:inherit;transition:all .2s;background:#f5e3a3;color:#000;font-weight:700;">
+          風格1<br><span style="font-size:10px;font-weight:400;">金底黑字 [xmove]</span>
+        </button>
+        <button onclick="marqueeSelectStyle('omove')" id="mqBtn_omove" style="flex:1;padding:14px 8px;border-radius:8px;border:2px solid var(--border);cursor:pointer;font-family:inherit;transition:all .2s;background:#000;color:#f0b429;font-weight:700;">
+          風格2<br><span style="font-size:10px;font-weight:400;">黑底金字 [omove]</span>
+        </button>
+      </div>
+      <label>內容（文字 或 圖片網址／外連代碼）</label>
+      <textarea id="mqContent" rows="3" placeholder="請輸入內容" oninput="mqAutoPreview()" style="font-family:inherit;font-size:13px;width:100%;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:7px;color:var(--text);resize:vertical;">${esc(selVal3)}</textarea>
+      <div id="mqContentPrev" style="margin-top:8px;"></div>`;
+      document.getElementById('modalOK').textContent='插入';
+      window._mqStyle='xmove';
+      setTimeout(()=>{ marqueeSelectStyle('xmove'); mqAutoPreview(); },30);
+      break;
+    }
     case 'gallery':
       html=`<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;gap:8px;">
         <span style="font-size:11px;color:var(--text2);flex:1;">點選圖片/影片即可插入文章使用。圖庫會儲存最新${MAX_GALLERY}項在此裝置，同裝置重新開啟仍可使用。</span>
@@ -1942,6 +2004,29 @@ function textfxSelect(tag){
     btn.style.borderColor=t===tag?'var(--gold)':'var(--border)';
     btn.style.background=t===tag?'rgba(240,180,41,.1)':'var(--surface2)';
   });
+}
+
+function marqueeSelectStyle(tag){
+  window._mqStyle=tag;
+  ['xmove','omove'].forEach(t=>{
+    const btn=document.getElementById('mqBtn_'+t);
+    if(!btn)return;
+    btn.style.boxShadow=t===tag?'0 0 0 3px var(--gold)':'none';
+    btn.style.borderColor=t===tag?'var(--gold)':'var(--border)';
+  });
+}
+function mqAutoPreview(){
+  const raw=document.getElementById('mqContent')?document.getElementById('mqContent').value:'';
+  const prev=document.getElementById('mqContentPrev');
+  if(!prev)return;
+  const trimmed=raw.trim();
+  if(!trimmed){prev.innerHTML='';return;}
+  const url=extractImgUrl(trimmed);
+  if(url){
+    prev.innerHTML=`<img src="${url}" style="max-width:80%;max-height:160px;border-radius:5px;border:6px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.15);" onerror="this.style.display='none'">`;
+  } else {
+    prev.innerHTML='';
+  }
 }
 
 function ximgSetType(type){
@@ -2343,6 +2428,21 @@ function confirmInsert(){
     case 'hide':{const num=String(parseInt(g('f1')||'0',10));const type_=g('f2');const cnt=g('f3');code=`[hide=${num},${type_}]${cnt}[/hide]\n`;break;}
     case 'sell':{const amt=String(parseInt(g('f1')||'0',10));const cnt=g('f2');code=`[sell=${amt}]${cnt}[/sell]\n`;break;}
     case 'textfx':{const tag=window._textfxTag||'xneon';const txt=g('fxText');if(!txt){showToast('❌ 請輸入文字');return;}code=`[${tag}]${txt}[/${tag}]\n`;break;}
+    case 'xmarquee':{
+      const styleTag=window._mqStyle||'xmove';
+      const raw=g('mqContent');
+      if(!raw){showToast('❌ 請輸入內容');return;}
+      const url=extractImgUrl(raw);
+      let content='';
+      if(url){
+        addToGallery(url,'img');
+        content=`[img]${url}[/img]`;
+      } else {
+        content=raw;
+      }
+      code=`[${styleTag}]${content}[/${styleTag}]\n`;
+      break;
+    }
     case 'colorpicker':{const c=selectedColor;const txt=savedSel.text||'文字';code=`[${colorModalTag}=${c}]${txt}[/${colorModalTag}]`;break;}
   }
   if(code){insertAtCursor(code);showToast(t('insert_ok'));}
@@ -2439,6 +2539,8 @@ function updatePreview(){
     ['ximg',c=>`<img class="forum-img ximg-img" src="${c}" onerror="this.style.display='none'">`],
     ['ovimg',c=>`<img class="forum-img ovimg-img" src="${c}" onerror="this.style.display='none'">`],
     ['oimg',c=>`<img class="forum-img oimg-img" src="${c}" onerror="this.style.display='none'">`],    ['img',c=>`<img class="forum-img" src="${c}" onerror="this.style.display='none'">`],
+    ['xmove',c=>hasForbidden(c)?failRaw('xmove',c):`<div class="xmove-box xmove-gold"><div class="xmove-viewport"><div class="xmove-track"><span class="xmove-item"><span class="xmove-star">★</span>${c}</span></div></div></div>`],
+    ['omove',c=>hasForbidden(c)?failRaw('omove',c):`<div class="xmove-box xmove-black"><div class="xmove-viewport"><div class="xmove-track"><span class="xmove-item"><span class="xmove-star">★</span>${c}</span></div></div></div>`],
     ['xmp4',c=>`<video class="forum-img" controls style="max-width:100%;border-radius:6px;margin:4px 0;"><source src="${c}" type="video/mp4">MP4: ${c}</video>`],
     ['xvmp4',c=>`<video class="forum-img" controls style="max-width:320px;border-radius:6px;margin:4px 0;"><source src="${c}" type="video/mp4">MP4: ${c}</video>`],
     ['xmp3',c=>`<audio controls style="width:100%;margin:6px 0;"><source src="${c}" type="audio/mpeg">MP3: ${c}</audio>`],
@@ -2499,12 +2601,68 @@ function updatePreview(){
   // Restore code blocks
   codePlaceholders.forEach((html,i)=>{h=h.replace(`«code${i}»`,html);});
   document.getElementById('preview').innerHTML=h||'<p style="color:#aaa;font-size:13px;text-align:center;margin-top:50px;">← 從左側選擇標籤開始</p>';
+  let mqStyleTag=document.getElementById('xmoveDynStyle');
+  if(!mqStyleTag){mqStyleTag=document.createElement('style');mqStyleTag.id='xmoveDynStyle';document.head.appendChild(mqStyleTag);}
+  mqStyleTag.textContent='';
+  initMoveAnimations(document.getElementById('preview'),mqStyleTag);
   // 若合併模式的 overlay 正在顯示，同步更新它
   const overlay=document.getElementById('previewOverlay');
   const overlayBody=document.getElementById('previewOverlayBody');
   if(overlay&&overlayBody&&overlay.style.display!=='none'){
     overlayBody.innerHTML=document.getElementById('preview').innerHTML;
+    initMoveAnimations(overlayBody,mqStyleTag);
   }
+}
+
+/* 跑馬燈：將單一項目依容器寬度動態複製多份，做成無縫連續循環跑馬（速度固定，內容長短只影響複製份數） */
+let _mqKfCounter=0;
+function initMoveAnimations(root,styleTag){
+  if(!root)return;
+  if(!styleTag){
+    styleTag=document.getElementById('xmoveDynStyle');
+    if(!styleTag){styleTag=document.createElement('style');styleTag.id='xmoveDynStyle';document.head.appendChild(styleTag);}
+  }
+  let cssRules='';
+  root.querySelectorAll('.xmove-box').forEach(box=>{
+    const viewport=box.querySelector('.xmove-viewport');
+    const track=box.querySelector('.xmove-track');
+    const item=track?track.querySelector('.xmove-item'):null;
+    if(!viewport||!track||!item)return;
+    const imgs=[...item.querySelectorAll('img')];
+    const pending=imgs.filter(img=>!img.complete);
+    if(pending.length){
+      // 內容含圖片但尚未載入完成：等圖片載入(或失敗)後再量測寬度，避免跑道長度算錯導致圖片跑出可視範圍
+      let remain=pending.length;
+      const done=()=>{ remain--; if(remain<=0)_buildMoveTrack(viewport,track,item); };
+      pending.forEach(img=>{
+        img.addEventListener('load',done,{once:true});
+        img.addEventListener('error',done,{once:true});
+      });
+      return;
+    }
+    cssRules+=_buildMoveTrack(viewport,track,item);
+  });
+  styleTag.textContent+=cssRules;
+}
+function _buildMoveTrack(viewport,track,item){
+  const itemW=Math.ceil(item.getBoundingClientRect().width)||120;
+  const viewW=Math.ceil(viewport.getBoundingClientRect().width)||300;
+  let repeats=Math.ceil(viewW/Math.max(itemW,1))+2;
+  if(repeats<2)repeats=2;
+  track.innerHTML=item.outerHTML.repeat(repeats*2);
+  const distance=itemW*repeats;
+  const speed=65; // px/秒，固定跑動速度，內容長短只影響複製份數不影響速度
+  const dur=Math.max(5,distance/speed);
+  const kf='xmoveKF_'+(_mqKfCounter++);
+  const rule=`@keyframes ${kf}{from{transform:translateX(0);}to{transform:translateX(-${distance}px);}}\n`;
+  track.style.animationName=kf;
+  track.style.animationDuration=dur+'s';
+  track.style.animationTimingFunction='linear';
+  track.style.animationIterationCount='infinite';
+  let styleTag=document.getElementById('xmoveDynStyle');
+  if(!styleTag){styleTag=document.createElement('style');styleTag.id='xmoveDynStyle';document.head.appendChild(styleTag);}
+  styleTag.textContent+=rule;
+  return '';
 }
 
 /* ═══════════════════════════════════════════
