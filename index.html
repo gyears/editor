@@ -567,6 +567,7 @@ textarea#editor.dragging{border:2px dashed var(--gold)!important;}
     <button class="fmt-btn" onclick="wrapFmt('move')" title="跑馬燈">跑馬燈</button>
     <div class="fmt-sep"></div>
     <button class="fmt-btn" onclick="toggleEmojiPanel(event)" title="插入表情" id="emojiBtnTrigger">😊 表情</button>
+    <button class="fmt-btn" onclick="renumberImages()" title="將文章內的圖片依序自動加上編號，雙頁美圖會合併為一組編號；再按一次會重新更新編號">🔢 圖片編號</button>
   </div>
 
   <div id="selectionBar">✨ <span data-i18n="selActive">已選取文字 — 點選功能鍵可包裹</span></div>
@@ -1271,6 +1272,62 @@ function updateStats(){
 }
 
 /* ═══════════════════════════════════════════
+   圖片編號
+═══════════════════════════════════════════ */
+function renumberImages(){
+  const editor_=document.getElementById('editor');
+  if(!editor_)return;
+  let text=editor_.value;
+  const TAGS=['xvimg-l','xvimg-r','ximg','ovimg','oimg','img'];
+  const mkPat=tag=>`(?:\\[url=[^\\]]+\\])?\\[${tag}\\][\\s\\S]*?\\[\\/${tag}\\](?:\\[\\/url\\])?`;
+  const anyTagAlt=TAGS.map(mkPat).join('|');
+
+  // 先移除先前工具自動加上的編號行（[b]純數字或「N&M.」[/b]格式，且緊接在圖片標籤前）
+  const stripRe=new RegExp('(^|\\n)[ \\t]*(?:\\[b\\])?\\d+(?:&\\d+)?\\.(?:\\[\\/b\\])?[ \\t]*\\r?\\n(?='+anyTagAlt+')','g');
+  text=text.replace(stripRe,'$1');
+
+  const full=new RegExp(anyTagAlt,'g');
+  const matches=[...text.matchAll(full)];
+  if(!matches.length){showToast('❌ 文章內沒有偵測到圖片');return;}
+
+  // 雙頁美圖是否成對，直接看標籤本身是不是 L 緊接著下一個偵測到的圖片是 R，
+  // 不管中間包了什麼（不同圖床的外連代碼格式可能不同），這樣比對外觀文字間距更準確
+  const getSide=s=>/\[xvimg-l\]/.test(s)?'L':(/\[xvimg-r\]/.test(s)?'R':'S');
+
+  let out='';
+  let lastIndex=0;
+  let n=1;
+  let i=0;
+  while(i<matches.length){
+    const m=matches[i];
+    out+=text.slice(lastIndex,m.index);
+    if(out.length&&!/\n$/.test(out))out+='\n';
+    const next=matches[i+1];
+    const isPair=getSide(m[0])==='L'&&next&&getSide(next[0])==='R';
+    if(isPair){
+      out+=`[b]${n}&${n+1}.[/b]`+'\n'+m[0];
+      lastIndex=m.index+m[0].length;
+      out+=text.slice(lastIndex,next.index)+next[0]; // 保留左右頁之間原有的內容（例如換行或包裝標籤）
+      lastIndex=next.index+next[0].length;
+      n+=2;
+      i+=2;
+    } else {
+      out+=`[b]${n}.[/b]`+'\n'+m[0];
+      lastIndex=m.index+m[0].length;
+      n+=1;
+      i+=1;
+    }
+  }
+  out+=text.slice(lastIndex);
+
+  editor_.value=out;
+  updatePreview();
+  updateStats();
+  try{localStorage.setItem('liujin_editor_content',editor_.value);}catch(e){}
+  showToast(`✅ 已更新 ${n-1} 張圖片編號`);
+}
+
+/* ═══════════════════════════════════════════
    FILE OPS
 ═══════════════════════════════════════════ */
 async function saveFile(){
@@ -1822,7 +1879,7 @@ function openModal(tag){
       const selVal3=savedSel&&savedSel.text?savedSel.text:'';
       html=`
       <div style="font-size:11px;color:var(--text2);background:rgba(240,180,41,.07);border:1px solid rgba(240,180,41,.2);border-radius:6px;padding:8px 11px;margin-bottom:12px;line-height:1.6;">
-        📜 選擇風格，並輸入內容。
+        📜 選擇風格，並輸入文字，或直接貼上圖片網址／論壇外連代碼，系統會自動判斷並顯示正確預覽。內容前方會自動加上小星星，滑鼠移到預覽區的跑馬燈上會暫停，移開後繼續跑動。
       </div>
       <div style="display:flex;gap:8px;margin-bottom:14px;">
         <button onclick="marqueeSelectStyle('xmove')" id="mqBtn_xmove" style="flex:1;padding:14px 8px;border-radius:8px;border:2px solid var(--border);cursor:pointer;font-family:inherit;transition:all .2s;background:#f5e3a3;color:#000;font-weight:700;">
