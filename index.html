@@ -1879,7 +1879,7 @@ function openModal(tag){
       const selVal3=savedSel&&savedSel.text?savedSel.text:'';
       html=`
       <div style="font-size:11px;color:var(--text2);background:rgba(240,180,41,.07);border:1px solid rgba(240,180,41,.2);border-radius:6px;padding:8px 11px;margin-bottom:12px;line-height:1.6;">
-        📜 選擇風格，並輸入內容。
+        📜 選擇風格，並輸入文字，或直接貼上圖片網址／論壇外連代碼，系統會自動判斷並顯示正確預覽。內容前方會自動加上小星星，滑鼠移到預覽區的跑馬燈上會暫停，移開後繼續跑動。
       </div>
       <div style="display:flex;gap:8px;margin-bottom:14px;">
         <button onclick="marqueeSelectStyle('xmove')" id="mqBtn_xmove" style="flex:1;padding:14px 8px;border-radius:8px;border:2px solid var(--border);cursor:pointer;font-family:inherit;transition:all .2s;background:#f5e3a3;color:#000;font-weight:700;">
@@ -2546,9 +2546,37 @@ function updatePreview(){
   h=h.replace(/\[align=right\]([\s\S]*?)\[\/align\]/g,'<div style="text-align:right">$1</div>');
   h=h.replace(/\[hr\]/g,'<hr style="border:none;border-top:1px solid #ccc;margin:10px 0;opacity:.7;">');
   // xvimg 雙頁美圖 - 必須在通用 [url=...] 處理之前執行，否則會被先吃掉
-  h=h.replace(/\[url=([^\]]+)\]\[xvimg-l\]([\s\S]*?)\[\/xvimg-l\]\[\/url\][\s\S]{0,20}\[url=([^\]]+)\]\[xvimg-r\]([\s\S]*?)\[\/xvimg-r\]\[\/url\]/g,(_,la,lSrc,ra,rSrc)=>{
-    return `<div class="xvimg-spread"><div class="xvimg-cell"><a href="${la}" target="_blank" class="xvimg-link"></a><img class="xvimg-page" src="${lSrc.trim()}" onerror="this.style.display='none'"></div><div class="xvimg-cell"><a href="${ra}" target="_blank" class="xvimg-link"></a><img class="xvimg-page" src="${rSrc.trim()}" onerror="this.style.display='none'"></div></div>`;
-  });
+  // 左右兩張圖可能來自不同圖床，外連格式不一定一致（有些有 [url=][/url] 外層連結、有些沒有），
+  // 所以不要求兩邊包裝方式相同，只要偵測到 xvimg-l 緊接著下一個是 xvimg-r 就視為一組雙頁美圖
+  {
+    const xvPat=/(?:\[url=([^\]]+)\])?\[xvimg-(l|r)\]([\s\S]*?)\[\/xvimg-\2\](?:\[\/url\])?/g;
+    const xvMatches=[...h.matchAll(xvPat)];
+    if(xvMatches.length){
+      let xvOut='';
+      let xvLast=0;
+      let xi=0;
+      while(xi<xvMatches.length){
+        const m=xvMatches[xi];
+        const next=xvMatches[xi+1];
+        const isPair=m[2]==='l'&&next&&next[2]==='r';
+        xvOut+=h.slice(xvLast,m.index);
+        if(isPair){
+          const lHref=m[1],lSrc=m[3].trim();
+          const rHref=next[1],rSrc=next[3].trim();
+          xvOut+=`<div class="xvimg-spread"><div class="xvimg-cell">${lHref?`<a href="${lHref}" target="_blank" class="xvimg-link"></a>`:''}<img class="xvimg-page" src="${lSrc}" onerror="this.style.display='none'"></div><div class="xvimg-cell">${rHref?`<a href="${rHref}" target="_blank" class="xvimg-link"></a>`:''}<img class="xvimg-page" src="${rSrc}" onerror="this.style.display='none'"></div></div>`;
+          xvLast=next.index+next[0].length;
+          xi+=2;
+        }else{
+          const href=m[1],src=m[3].trim();
+          xvOut+=href?`<a href="${href}" target="_blank"><img class="forum-img ximg-img" src="${src}" onerror="this.style.display='none'"></a>`:`<img class="forum-img ximg-img" src="${src}" onerror="this.style.display='none'">`;
+          xvLast=m.index+m[0].length;
+          xi+=1;
+        }
+      }
+      xvOut+=h.slice(xvLast);
+      h=xvOut;
+    }
+  }
   // url+img (Postimages)
   h=h.replace(/\[url=([^\]]+)\]\[img\]([\s\S]*?)\[\/img\]\[\/url\]/g,(_,href,src)=>`<a href="${href}" target="_blank"><img class="forum-img" src="${src.trim()}" onerror="this.style.display='none'"></a>`);
   h=h.replace(/\[url=([^\]]+)\]\[ximg\]([\s\S]*?)\[\/ximg\]\[\/url\]/g,(_,href,src)=>`<a href="${href}" target="_blank"><img class="forum-img ximg-img" src="${src.trim()}" onerror="this.style.display='none'"></a>`);
@@ -2632,15 +2660,6 @@ function updatePreview(){
     return `<a class="xbtn-link" href="${url}" target="_blank">${text.trim()}</a>`;
   });
   // dialog
-  // xvimg 裸配對（不帶 url 外連）
-  h=h.replace(/\[xvimg-l\]([\s\S]*?)\[\/xvimg-l\]\s*\[xvimg-r\]([\s\S]*?)\[\/xvimg-r\]/g,(_,l,r)=>{
-    return `<div class="xvimg-spread"><div class="xvimg-cell"><img class="xvimg-page" src="${l.trim()}" onerror="this.style.display='none'"></div><div class="xvimg-cell"><img class="xvimg-page" src="${r.trim()}" onerror="this.style.display='none'"></div></div>`;
-  });
-  // 落單容錯
-  h=h.replace(/\[url=([^\]]+)\]\[xvimg-l\]([\s\S]*?)\[\/xvimg-l\]\[\/url\]/g,(_,a,src)=>`<a href="${a}" target="_blank"><img class="forum-img ximg-img" src="${src.trim()}" onerror="this.style.display='none'"></a>`);
-  h=h.replace(/\[url=([^\]]+)\]\[xvimg-r\]([\s\S]*?)\[\/xvimg-r\]\[\/url\]/g,(_,a,src)=>`<a href="${a}" target="_blank"><img class="forum-img ximg-img" src="${src.trim()}" onerror="this.style.display='none'"></a>`);
-  h=h.replace(/\[xvimg-l\]([\s\S]*?)\[\/xvimg-l\]/g,(_,c)=>`<img class="forum-img ximg-img" src="${c.trim()}" onerror="this.style.display='none'">`);
-  h=h.replace(/\[xvimg-r\]([\s\S]*?)\[\/xvimg-r\]/g,(_,c)=>`<img class="forum-img ximg-img" src="${c.trim()}" onerror="this.style.display='none'">`);
   h=h.replace(/\[xleft\]([\s\S]*?)\[\/xleft\]/g,(_,c)=>`<div class="xleft-bubble"><span>${c.trim()}</span></div>`);
   h=h.replace(/\[xright\]([\s\S]*?)\[\/xright\]/g,(_,c)=>`<div class="xright-bubble"><span>${c.trim()}</span></div>`);
   // table
